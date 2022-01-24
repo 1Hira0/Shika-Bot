@@ -10,7 +10,7 @@ print("file running")
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('%'), intents=intents)
 bot.remove_command("help")
 #removing the inbuilt help command
-owner = '639259314074157077'
+owner = ''
 master = '602098932260143124'
 mastwo =  '847861640833007686'
 discEpoch = 1420070400000
@@ -65,35 +65,37 @@ async def help(ctx, cummand=None):
 			`%help` this msg where my master tried to be funny, please forgive me, i didnt do anything wrong! 
 			`%hug` lets you hug `target`
 			`%rps(Rock Paper Scissors)` - Play's Rock Paper Scissors with you ||maybe between player in the future too!||
-			`%avatar` - sends the user's avatar"""))
-		await ctx.channel.send(embed=discord.Embed(title="Commands in development",description="`Songs/Lyrics`(very unsure and may take more than 6 months), `Image to Ascii` "))
+			`%avatar` - sends the user's avatar
+			`%toascii` - changes uploaded image to ascii (urls don't work for now and images are required)"""))
+
+		await ctx.channel.send(embed=discord.Embed(title="Possible commands in future",description="`Songs/Lyrics`(very unsure and may take more than 6 months), MAL(MyAnimeList) implementation(notifications for new shows and checking out shows), weather forecasting"))
 		await ctx.channel.send("Use the command name after `%help` for more info into the command")
 	
 	elif cummand != None:
 		#more info for slap command
 		if "slap" in cummand:
 			await ctx.channel.send("The slap command lets you send an virtual slap to 	someone.\nIt requires a target to slap!")
-			await ctx.channel.send(file=discord.File("slap.png"))
+			await ctx.channel.send(file=discord.File("./help images/slap.png"))
 
 		#more info for ping command
 		elif "ping" in cummand:
 			await ctx.channel.send("The ping command sends how long it takes for the bot 	to respond to a message")
-			await ctx.channel.send(file=discord.File("ping.png"))
+			await ctx.channel.send(file=discord.File("./help images/ping.png"))
 
 		#more info for the help command itself
 		elif "help" in cummand:
 			await ctx.channel.send(f"The help command sends the list of commands for 	{bot.user} which is manually edited")
-			await ctx.channel.send(file=discord.File("help.png"))
+			await ctx.channel.send(file=discord.File("./help images/help.png"))
 	
 		#more info for hug command
 		elif "hug" in cummand:
 			await ctx.channel.send("The hug command lets you send online hugs to someone 	else.\nIt requires a target to send the hugs to!")
-			await ctx.channel.send(file=discord.File("hug.png"))
+			await ctx.channel.send(file=discord.File("./help images/hug.png"))
 
 		#more info for checkAV command
 		elif "av" in cummand or "pfp" in cummand or "avatar" in cummand:
 			await ctx.channel.send("Use 	`%checkAV`, this sends the avatar of a person.\n %checkAV `optional(user-id 	or mention)`")
-			await ctx.channel.send(file=discord.File("checkAV.png"))
+			await ctx.channel.send(file=discord.File("./help images/checkAV.png"))
 
 		#more info for songs
 		elif "song" in cummand or "music" in cummand or "anime" in cummand or "rand" in 	cummand: 
@@ -181,62 +183,7 @@ for filename in os.listdir("./commands"):
 
 
 
-#
-#@bot.command()
-#async def remove_welcome(ctx):
-	
-
-
 # THE SLAP COMMAND
-@bot.command(aliases=["hit","smack"])
-async def slap(message, *targ):
-	target = " ".join([f"{targ[i]}" for i in range(len(targ))])
-	slapper = message.author.mention
-	all_slaps = ["slapped", "smacked", "hit"]
-	slaps = random.choice(all_slaps)
-	print("Slap was ran")
-	print("Target spotted",target)
-	print("Assilant spotted",slapper)
-	if owner in target:
-			print("Someone tried to slap Bongs")
-			if slapper == owner:
-					print("Bongs tried to slap himslef")
-					await message.channel.send("Don't hurt yourself majesty")
-			elif slapper != owner:
-					print("Someone else tried to slap Bongs")
-					await message.channel.send("No one slaps the Potato King!")
-	elif master in target or mastwo in target:
-			await message.channel.send("You are not allowed to slap daddy!")
-			
-	elif str(message.author.id) in target:
-			await message.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target},but regret hurting themself"))
-		
-	elif "790123597246889994" in target:
-			await message.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target}"))
-			await message.channel.send("I am sad now :pensive:")
-
-	elif not(owner in target) and not(master in target) and not(mastwo in target) and not(str(message.author.id) in target):
-			await message.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target}"))
-
-
-
-# THE HUG COMMAND
-@bot.command()
-async def hug(message, *,target):
-  member_ping = message.author.mention
-  huggie = random.choice(["hugs", "gives a big hug to", ":people_hugging:"])
-  print("Hug was ran")
-  print(target)
-  await message.channel.send(embed=discord.Embed(description=f"{member_ping} {huggie} {target}"))
-  if member_ping in target:
-    await message.channel.send(embed=discord.Embed(description=message.author.mention + " tries to hug themself, realises that they are lonely and becomes sad"))
-    await message.channel.send("Oh don't be sad!  " )
-    await message.channel.send(embed=discord.Embed(description=f"<@!790123597246889994> {huggie} {member_ping}"))
-    return
-  elif "<@!790123597246889994>" in target or "<@790123597246889994>" in target:
-    print("Someone hugged me, YAY!")
-    await message.channel.send('Oh thank you!')
-    await message.channel.send(embed=discord.Embed(description=f'<@!790123597246889994> hugs {member_ping}  back'))
 
 
 
