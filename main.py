@@ -146,7 +146,7 @@ async def help(ctx, cummand=None):
 @bot.command()
 async def load(ctx, extension):
 	if str(ctx.author.id) in powerfuls:
-			bot.load_extension(f"commands.{extension}")
+			bot.load_extension(f"cogs.{extension}")
 			print(f"loaded {extension} at {time.ctime()}")
 			await ctx.channel.send(f"loaded {extension} at {time.ctime}")
 	else:
@@ -156,7 +156,7 @@ async def load(ctx, extension):
 @bot.command()
 async def reload(ctx, extension):
 	if str(ctx.author.id) in powerfuls:
-			bot.reload_extension(f"commands.{extension}")
+			bot.reload_extension(f"cogs.{extension}")
 			print(f"reloaded {extension} at {time.ctime()}")
 			await ctx.channel.send(f"reloaded {extension} at {time.ctime()}")
 	else:
@@ -168,7 +168,7 @@ async def reload(ctx, extension):
 async def unload(ctx, extension):
 	msg = f"unloaded {extension} at {time.ctime()}"
 	if str(ctx.author.id) in powerfuls:
-			bot.unload_extension(f"commands.{extension}")
+			bot.unload_extension(f"cogs.{extension}")
 			print(msg)
 			await ctx.channel.send(msg)
 	else:
@@ -177,9 +177,9 @@ async def unload(ctx, extension):
 
 
 #finding command-files and loading them
-for filename in os.listdir("./commands"):
+for filename in os.listdir("./cogs"):
 	if filename.endswith(".py"):
-		bot.load_extension(f"commands.{filename[:-3]}")
+		bot.load_extension(f"cogs.{filename[:-3]}")
 
 
 
