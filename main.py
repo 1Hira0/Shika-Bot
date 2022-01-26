@@ -1,9 +1,9 @@
 from keep_alive import keep_alive
-import discord, random, asyncio, os, time
-from discord import FFmpegPCMAudio
-from discord.ext import commands
+import nextcord, random, asyncio, os, time
+from nextcord import FFmpegPCMAudio
+from nextcord.ext import commands
 
-intents = discord.Intents.all()
+intents = nextcord.Intents.all()
 
 print("file running")
 
@@ -51,11 +51,11 @@ async def supercum(ctx, *,com):
 
 
 # THE COMMANDS
-# THE HELP COMMAND - discord.ext adds an in-built help command and this is an extra help command
+# THE HELP COMMAND - nextcord.ext adds an in-built help command and this is an extra help command
 @bot.command()
 async def help(ctx, cummand=None):
 	if cummand == None:
-		await ctx.channel.send(embed=discord.Embed(title="Shika's commands", description="""Hello my name is Shika, Japanese for Hira\n
+		await ctx.channel.send(embed=nextcord.Embed(title="Shika's commands", description="""Hello my name is Shika, Japanese for Hira\n
 		My Prefix is `%`
 		These are my functions: 
 			`%slap` - slaps a `target` 
@@ -66,34 +66,34 @@ async def help(ctx, cummand=None):
 			`%avatar` - sends the user's avatar
 			`%toascii` - changes uploaded image to ascii (urls don't work for now and images are required)"""))
 
-		await ctx.channel.send(embed=discord.Embed(title="Possible commands in future",description="`Songs/Lyrics`(very unsure and may take more than 6 months), MAL(MyAnimeList) implementation(notifications for new shows and checking out shows), weather forecasting"))
+		await ctx.channel.send(embed=nextcord.Embed(title="Possible commands in future",description="`Songs/Lyrics`(very unsure and may take more than 6 months), MAL(MyAnimeList) implementation(notifications for new shows and checking out shows), weather forecasting"))
 		await ctx.channel.send("Use the command name after `%help` for more info into the command")
 	
 	elif cummand != None:
 		#more info for slap command
 		if "slap" in cummand:
 			await ctx.channel.send("The slap command lets you send an virtual slap to 	someone.\nIt requires a target to slap!")
-			await ctx.channel.send(file=discord.File("./help images/slap.png"))
+			await ctx.channel.send(file=nextcord.File("./help images/slap.png"))
 
 		#more info for ping command
 		elif "ping" in cummand:
 			await ctx.channel.send("The ping command sends how long it takes for the bot 	to respond to a message")
-			await ctx.channel.send(file=discord.File("./help images/ping.png"))
+			await ctx.channel.send(file=nextcord.File("./help images/ping.png"))
 
 		#more info for the help command itself
 		elif "help" in cummand:
 			await ctx.channel.send(f"The help command sends the list of commands for 	{bot.user} which is manually edited")
-			await ctx.channel.send(file=discord.File("./help images/help.png"))
+			await ctx.channel.send(file=nextcord.File("./help images/help.png"))
 	
 		#more info for hug command
 		elif "hug" in cummand:
 			await ctx.channel.send("The hug command lets you send online hugs to someone 	else.\nIt requires a target to send the hugs to!")
-			await ctx.channel.send(file=discord.File("./help images/hug.png"))
+			await ctx.channel.send(file=nextcord.File("./help images/hug.png"))
 
 		#more info for checkAV command
 		elif "av" in cummand or "pfp" in cummand or "avatar" in cummand:
 			await ctx.channel.send("Use 	`%checkAV`, this sends the avatar of a person.\n %checkAV `optional(user-id 	or mention)`")
-			await ctx.channel.send(file=discord.File("./help images/checkAV.png"))
+			await ctx.channel.send(file=nextcord.File("./help images/checkAV.png"))
 
 		#more info for songs
 		elif "song" in cummand or "music" in cummand or "anime" in cummand or "rand" in 	cummand: 
@@ -197,7 +197,7 @@ async def ping(ctx):
 
 # THE AVATAR COMMAND 
 @bot.command(aliases=["av", "pfp", "avatar", "profile picture"])
-async def checkAV(ctx, adult_video : discord.Member=None): #here adult_video is a pun for AV as an abbreviation for adult video
+async def checkAV(ctx, adult_video : nextcord.Member=None): #here adult_video is a pun for AV as an abbreviation for adult video
 	if adult_video != None:
 		pfp = adult_video.avatar_url_as(static_format="png", size=4096)
 		print(pfp)
@@ -213,7 +213,7 @@ async def join(ctx):
 	await ctx.channel.send("This command is in development. You may encounter **errors!**. ")
 	channel = ctx.author.voice.channel
 	await channel.connect()
-	await ctx.channel.send(embed=discord.Embed(title="VC ativity", description="Joined VC"))
+	await ctx.channel.send(embed=nextcord.Embed(title="VC ativity", description="Joined VC"))
 
 
 
@@ -227,11 +227,11 @@ async def play(ctx, *,newsong=None):
 	elif not(newsong == None):
 		song = newsong.lower() + ".mp3"
 	the_file = os.path.join(music_dir, song)
-	voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+	voice = nextcord.utils.get(bot.voice_clients, guild=ctx.guild)
 	if voice == None:
 		voice = await ctx.author.voice.channel.connect()
 	voice.play(FFmpegPCMAudio(the_file))
-	await bot.change_presence(activity=discord.Activit(type=discord.ActivityType.listening, name=(song.replace(".mp3","")).title())) #this changes the status
+	await bot.change_presence(activity=nextcord.Activit(type=nextcord.ActivityType.listening, name=(song.replace(".mp3","")).title())) #this changes the status
 
 
 
@@ -239,8 +239,8 @@ async def play(ctx, *,newsong=None):
 @bot.command(aliases=["disconnect", "fuck off", "get out", "bye"])
 async def leave(ctx):
 	if str(ctx.author.id) in powerfuls:
-	    server = ctx.guild.voice_client
-	    await server.disconnect()
+		server = ctx.guild.voice_client
+		await server.disconnect()
 
 
 
