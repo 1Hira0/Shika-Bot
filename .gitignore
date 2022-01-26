@@ -2,3 +2,6 @@
 /songs
 /speshal servs
 ezgif.com-gif-maker.gif
+*.lock
+*.toml
+/cogs/testing.py

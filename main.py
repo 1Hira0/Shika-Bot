@@ -10,9 +10,7 @@ print("file running")
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('%'), intents=intents)
 bot.remove_command("help")
 #removing the inbuilt help command
-owner = ''
-master = '602098932260143124'
-mastwo =  '847861640833007686'
+
 discEpoch = 1420070400000
 
 
@@ -245,7 +243,6 @@ async def leave(ctx):
 	    await server.disconnect()
 
 
-#for i in ["music.py", "ToAscii.py"]: bot.unload_extension(f"commands.{i}")
 
 
 keep_alive()

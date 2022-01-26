@@ -1,4 +1,7 @@
 from discord.ext import commands
+#import malclient
+
+#mal = malclient.Client()
 
 class MAL(commands.Cog):
 	def __init__(self, client):
