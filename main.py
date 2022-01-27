@@ -240,8 +240,8 @@ async def play(ctx, *,newsong=None):
 @bot.command(aliases=["disconnect", "fuck off", "get out", "bye"])
 async def leave(ctx):
 	if str(ctx.author.id) in powerfuls:
-	    server = ctx.guild.voice_client
-	    await server.disconnect()
+		server = ctx.guild.voice_client
+		await server.disconnect()
 
 
 
