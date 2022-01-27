@@ -1,7 +1,7 @@
 import requests
 import os
-import nextcord
-from nextcord.ext import commands
+import discord
+from discord.ext import commands
 weatherapi_key = os.environ['e'].replace("'", "")
 url = "http://api.weatherapi.com/v1"
 
@@ -32,7 +32,7 @@ class Weather(commands.Cog):
                 humidity = f"\nhumidity: {now['humidity']}%"
                 cloud = f"\ncloudiness: {now['cloud']}%"
                 current_weather = f"{weather_cond}{temperature}{wind_kph}{humidity}{cloud}{precip}"
-                embed = nextcord.Embed(
+                embed = discord.Embed(
                         title=f"Current weather at `{place['name']}, {place['region']}, {place['country']}`",
                         description=current_weather) 
                 embed.set_thumbnail(url="https://"+cond_icon)

@@ -1,5 +1,5 @@
-from nextcord.ext import commands
-import math, nextcord
+from discord.ext import commands
+import math, discord
 
 class Levels(commands.Cog):
    def __init__(self, client):
@@ -26,7 +26,7 @@ class Levels(commands.Cog):
             await chan.send(error)
          msg = f"Member:{member} \nServer:{ctx.guild} \nLVL:{mee6} \nQuetient: {mee6[0]/5}, THE NUMBER: {math.floor(mee6[0]/5)} \nTHE CHOSEN: {chosen} \nRole given to {member.mention}, Role:{role.name}"
          print(msg)
-         await chan.send(embed=nextcord.Embed(description=msg)) 
+         await chan.send(embed=discord.Embed(description=msg)) 
          oldnick = member.nick
          if oldnick == None:
             oldnick = member.name
@@ -59,7 +59,7 @@ class Levels(commands.Cog):
          await member.add_roles(role)
          msg = f"Member:{member} \nServer:{ctx.guild} \nLVL:{mee6} \nQuetient: {mee6[0]/10}, THE NUMBER: {math.floor(mee6[0]/10)} \nTHE CHOSEN: {chosen} \nRole given to {member.mention}, Role:{role.name}"
          print(msg)
-         await chan.send(embed=nextcord.Embed(description=msg)) 
+         await chan.send(embed=discord.Embed(description=msg)) 
 
 
 

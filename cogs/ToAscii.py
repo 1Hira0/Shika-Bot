@@ -1,6 +1,6 @@
-import nextcord, requests, os
+import discord, requests, os
 #from PIL import Image
-from nextcord.ext import commands
+from discord.ext import commands
 import ascii_magic as asci
 
 #to return the file from the either url or attachment, and checking if its valid
@@ -39,7 +39,7 @@ class ToAscii(commands.Cog):
 				os.remove(filen)
 				path = "tmp.txt"
 				asci.to_file(path=path, art=hill)
-				await ctx.channel.send(file=nextcord.File(path))
+				await ctx.channel.send(file=discord.File(path))
 				os.remove(path)
 				await msg.delete()
 		else: await ctx.channel.send(content="No image")
