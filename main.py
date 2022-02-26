@@ -243,9 +243,6 @@ async def leave(ctx):
 		server = ctx.guild.voice_client
 		await server.disconnect()
 
-
-
-
 keep_alive()
 
 bot.run(os.environ['env'])

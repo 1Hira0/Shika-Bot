@@ -10,7 +10,8 @@ class Levels(commands.Cog):
       if ctx.channel.id == 904590281540771840: # FOR GAMER'S PARADISE - https://discord.com/invite/ckPHDTgT2c
          member = ctx.mentions[0]
          mee6 = [int(s) for s in str.split(ctx.content) if s.isdigit()]
-         roles = [876032522008535041, 
+         roles = [
+         876032522008535041, 
          890513662870163456, 
          930806878081011772, 
          930807278121132072, 

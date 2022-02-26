@@ -29,18 +29,18 @@ class ToAscii(commands.Cog):
 	async def toascii(self, ctx, columns:int=120):
 		print(bool(ctx.message.attachments))
 		if ctx.message.attachments:
-				print(columns)
-				msg = await ctx.channel.send("converting image!")
-				attachment = ctx.message.attachments[0]
-				name, ext = os.path.splitext(attachment.filename)
-				filen = f"temp.{ext}"
-				await attachment.save(filen)
-				hill = asci.from_image_file(img_path=filen, columns=columns ,mode=asci.Modes.ASCII)
-				os.remove(filen)
-				path = "tmp.txt"
-				asci.to_file(path=path, art=hill)
-				await ctx.channel.send(file=discord.File(path))
-				os.remove(path)
-				await msg.delete()
+			print(columns)
+			msg = await ctx.channel.send("converting image!")
+			attachment = ctx.message.attachments[0]
+			name, ext = os.path.splitext(attachment.filename)
+			filen = f"temp.{ext}"
+			await attachment.save(filen)
+			hill = asci.from_image_file(img_path=filen, columns=columns ,mode=asci.Modes.ASCII)
+			os.remove(filen)
+			path = "tmp.txt"
+			asci.to_file(path=path, art=hill)
+			await ctx.channel.send(file=discord.File(path))
+			os.remove(path)
+			await msg.delete()
 		else: await ctx.channel.send(content="No image")
 def setup(client): client.add_cog(ToAscii(client))
