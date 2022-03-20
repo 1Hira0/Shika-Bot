@@ -140,8 +140,6 @@ class Anime(commands.Cog):
     )
     
     
-    
-    
     @anime.subcommand(name='ranking', description='Anime ranking')
     async def rank(self, ctx: Interaction, _type:str=animeSl_ranks, limit:int=animeSl_limit):
         ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}', headers=headers)
