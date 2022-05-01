@@ -439,4 +439,5 @@ class User(commands.Cog):
         
 def setup(client): 
 	client.add_cog(Manga(client))
+
 	client.add_cog(Anime(client))
