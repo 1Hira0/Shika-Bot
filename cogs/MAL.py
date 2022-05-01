@@ -1,4 +1,3 @@
-from audioop import avg
 import nextcord, os, requests, asyncio, math, datetime
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
