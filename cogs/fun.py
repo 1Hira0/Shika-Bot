@@ -1,7 +1,7 @@
-import discord
+import nextcord
 import random
 import asyncio
-from discord.ext import commands
+from nextcord.ext import commands
 
 Owner = '639259314074157077'
 MASTER = '602098932260143124'
@@ -88,14 +88,14 @@ class Commands(commands.Cog):
             await ctx.channel.send("You are not allowed to slap daddy!")
         		
         elif str(ctx.author.id) in target:
-            await ctx.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target}, but regret hurting themself"))
+            await ctx.channel.send(embed=nextcord.Embed(description=f"{slapper} {slaps} {target}, but regret hurting themself"))
         	
         elif "790123597246889994" in target:
-            await ctx.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target}"))
+            await ctx.channel.send(embed=nextcord.Embed(description=f"{slapper} {slaps} {target}"))
             await ctx.channel.send("I am sad now :pensive:")
         
         elif not(Owner in target) and not(MASTER in target) and not(MASTWO in target) and not(str(ctx.author.id) in target):
-            await ctx.channel.send(embed=discord.Embed(description=f"{slapper} {slaps} {target}"))
+            await ctx.channel.send(embed=nextcord.Embed(description=f"{slapper} {slaps} {target}"))
 
     # THE HUG COMMAND
     @commands.command()
@@ -104,16 +104,16 @@ class Commands(commands.Cog):
         huggie = random.choice(["hugs", "gives a big hug to", ":people_hugging:"])
         print("Hug was ran")
         print(target)
-        await ctx.channel.send(embed=discord.Embed(description=f"{member_ping} {huggie} {target}"))
+        await ctx.channel.send(embed=nextcord.Embed(description=f"{member_ping} {huggie} {target}"))
         if member_ping in target:
-          await ctx.channel.send(embed=discord.Embed(description=ctx.author.mention + " tries to hug themself, realises that they are lonely and becomes sad"))
+          await ctx.channel.send(embed=nextcord.Embed(description=ctx.author.mention + " tries to hug themself, realises that they are lonely and becomes sad"))
           await ctx.channel.send("Oh don't be sad!  " )
-          await ctx.channel.send(embed=discord.Embed(description=f"<@!790123597246889994> {huggie} {member_ping}"))
+          await ctx.channel.send(embed=nextcord.Embed(description=f"<@!790123597246889994> {huggie} {member_ping}"))
           return
         elif "<@!790123597246889994>" in target or "<@790123597246889994>" in target:
           print("Someone hugged me, YAY!")
           await ctx.channel.send('Oh thank you!')
-          await ctx.channel.send(embed=discord.Embed(description=f'<@!790123597246889994> hugs {member_ping} back'))
+          await ctx.channel.send(embed=nextcord.Embed(description=f'<@!790123597246889994> hugs {member_ping} back'))
 
 def setup(client):
 	client.add_cog(Commands(client))
