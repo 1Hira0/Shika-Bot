@@ -436,6 +436,8 @@ class User(commands.Cog):
     @user.subcommand(name="animelist", description="User's animelist")
     async def animelist(self, ctx:Interaction, username:str=userName, listStat:str=userStatus):
         response = requests.get(url=f"{mal_url}/users/{username}/animelist?limit=1000{listStat}&sort=list_updated_at", headers=headers)
+        return response.json()
+
         
 def setup(client): 
 	client.add_cog(Manga(client))
