@@ -11,10 +11,6 @@ class Commands(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        pass
-
 
 
     @commands.command()
@@ -114,6 +110,19 @@ class Commands(commands.Cog):
           print("Someone hugged me, YAY!")
           await ctx.channel.send('Oh thank you!')
           await ctx.channel.send(embed=nextcord.Embed(description=f'<@!790123597246889994> hugs {member_ping} back'))
-
+ #
+    #@commands.Cog.listener()
+    #async def on_ready(self):
+    #    trash = self.client.get_guild(951344945762013195)
+    #    normie = trash.get_member(970914858822414347)
+    #    madara = 'Uchiha Madras'
+    #    uchiha = 'उचिहा मद्रास'
+    #    async for i in trash.audit_logs(action=nextcord.AuditLogAction.member_update):
+    #        print(log)
+    #@commands.Cog.listener()
+    #async def on_member_update(self, b4, a4):
+    #    trash = self.client.get_guild(951344945762013195)
+    #    log = trash.audit_logs()
+        
 def setup(client):
 	client.add_cog(Commands(client))
