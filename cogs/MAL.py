@@ -1,23 +1,41 @@
-import nextcord, os, requests, asyncio, math, datetime
+import asyncio
+import datetime
+import math
+import os
+from io import BytesIO
+
+import nextcord
+import requests
 from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
+from PIL import Image
+
+from mangareader import get_mangareader
 
 thisyear = datetime.date.today().year
 
 mal_url = 'https://api.myanimelist.net/v2'
 headers = {'Authorization': f"Bearer {os.environ['mal']}"}
+auth = {'X-MAL-CLIENT-ID':f"{os.environ['clientid']}"}
+
+
+def make_gif(pictures):
+    frames = [Image.open(BytesIO(requests.get(url=image['medium']).content)) for image in pictures]
+    frame_one = frames[0]
+    frame_one.save("manga.gif", format="GIF", append_images=frames,
+               save_all=True, duration=1000, loop=0)
+    return "manga.gif"
 
 cho = {
-    		"Top Anime Series"       :'all'         ,
-    		"Top Airing Anime"       :'airing'      ,
-    		"Top Upcoming Anime"     :'upcoming'    ,
-    		"Top Anime TV Series"    :'tv'          ,
-    		"Top Anime OVA Series"   :'ova'         ,
-    		"Top Anime Movies"       :'movie'       ,
-    		"Top Anime Specials"     :'special'     ,
-    		"Top Anime by Popularity":'bypopularity',
-    		"Top Favorited Anime"    :'favorite'    
-    		}
+    "Top Anime Series"       :'all'         ,
+    "Top Airing Anime"       :'airing'      ,
+    "Top Upcoming Anime"     :'upcoming'    ,
+    "Top Anime TV Series"    :'tv'          ,
+    "Top Anime OVA Series"   :'ova'         ,
+    "Top Anime Movies"       :'movie'       ,
+    "Top Anime Specials"     :'special'     ,
+    "Top Anime by Popularity":'bypopularity',
+    "Top Favorited Anime"    :'favorite'    }
 
 cho2 = {
     "All"           :"all"         ,
@@ -28,8 +46,7 @@ cho2 = {
     "Top Manhwa"    :"manhwa"      ,
     "Top Manhua"    :"manhua"      ,
     "Most Popular"  :"bypopularity",
-    "Most Favorited":"favorite"
-}
+    "Most Favorited":"favorite"}
 
 animeSl_limit=SlashOption(
         name="limit",
@@ -60,7 +77,7 @@ class Anime(commands.Cog):
     )
     async def search(self, ctx:Interaction, anime:str=animeSl_name, limit:int=animeSl_limit):
         print("search used")
-        r = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}", headers=headers)
+        r = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}", headers=auth)
         print(r.status_code, f"\n{r.url}")
         if r.status_code == 200:
             r_dict = r.json()['data']
@@ -79,7 +96,7 @@ class Anime(commands.Cog):
     
     @anime.subcommand(name="info", description=("anime info"))
     async def info(self, ctx:Interaction, name:str=animeSl_name):
-        anime  = requests.get(url=f"{mal_url}/anime?q={name}&limit={5}", headers=headers)
+        anime  = requests.get(url=f"{mal_url}/anime?q={name}&limit={5}", headers=auth)
         r = anime.json()['data']
         text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(anime.json()['data']))])
         print(text)
@@ -115,10 +132,11 @@ class Anime(commands.Cog):
             chosen = 0
     
         if anime.status_code == 200:
-            print(anime.json())
+
             animeID = anime.json()['data'][chosen]['node']['id']
-            response = requests.get(url=f"{mal_url}/anime/{animeID}?fields=title,main_picture,start_date,end_date,synopsis,mean,rank,nsfw,created_at,status,genres,num_episodes,average_episode_duration,recommendations,studios",  headers=headers)
+            response = requests.get(url=f"{mal_url}/anime/{animeID}?fields=title,main_picture,start_date,end_date,synopsis,mean,rank,nsfw,created_at,status,genres,num_episodes,average_episode_duration,recommendations,studios",  headers=auth)
             r = response.json()
+            print(r)
             #nsfw shit
             nsfw = ""
             if r['nsfw'] != 'white': nsfw = "\nnfsw"
@@ -129,10 +147,11 @@ class Anime(commands.Cog):
             synp = r['synopsis'].replace('\n\n','\n')
             #total time needed to complete the show (calulated from avg. time,in sec, for one ep - given from MAL )
             time_needed = f"\ntotal run time: {math.floor((r['num_episodes'] * r['average_episode_duration'])/3600)} hours {((r['num_episodes'] * r['average_episode_duration'])//60)%60} minutes"
-            if '0 hours 0 minutes' in time_needed: time_needed = ''
+            if ' 0 hours 0 minutes' in time_needed : time_needed = ''
+            print(time_needed)
             #genre of the show
             genre = ''
-            if 'genre' in r :genre = f"\n{', '.join([i['name'] for i in r['genres']])}"
+            if 'genres' in r :genre = f"\n{', '.join([i['name'] for i in r['genres']])}"
             else: genre = '\ngenre: Not available yet'
             #recommendation/relatable shows
             recom = ''
@@ -141,16 +160,16 @@ class Anime(commands.Cog):
             studio = ''
             if r['studios'] :studio += f"\n\nStudio: {r['studios'][0]['name']}"
             #start & end date of release/ airing/ not released
-            timing = "\nNot aired yet"
-            if "end_date" in r and 'start_date' in r:timing = f"\nfrom {r['start_date']} to {r['end_date']}"
-            elif ('end_date' not in r) and 'start_date' in r: timing = f"\nfrom {r['start_date']} to ?(airing)"
+            if r['status'] == 'not_yet_aired':timing = "\nNot aired yet"
+            elif r['status'] == 'currently_airing': timing = f"\nfrom {r['start_date']} to ?(airing)"
+            elif r['status'] == 'finished_airing':timing = f"\nfrom {r['start_date']} to {r['end_date']}"
             #rank on MAL
             ranga = '' #ranga is a character from Tensei Slime Datta Ken (That Time I Got Reincarnated as a Slime)
             if 'rank' in r: 
                 if   str(r['rank']).endswith('1'): ranga = f"🏆: {r['rank']}st"
                 elif str(r['rank']).endswith('2'): ranga = f"🏆: {r['rank']}nd"
                 elif str(r['rank']).endswith('3'): ranga = f"🏆: {r['rank']}rd"
-                else: ranga = f"{r['rank']}th"
+                else: ranga = f"🏆: {r['rank']}th"
             else: ranga = 'Not ranked yet'
             avg = 'Not scored yet'
             if 'mean' in r: avg=f"\n⭐:{r['mean']}"
@@ -176,7 +195,7 @@ class Anime(commands.Cog):
     
     @anime.subcommand(name='ranking', description='Anime ranking')
     async def rank(self, ctx: Interaction, _type:str=animeSl_ranks, limit:int=animeSl_limit):
-        ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}', headers=headers)
+        ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}', headers=auth)
         title = get_key(_type)
         print(ranking.status_code)
         if ranking.status_code == 200:
@@ -277,16 +296,14 @@ class Manga(commands.Cog):
     async def manga(self, ctx:Interaction): ...
     mangaSl_name=SlashOption(
         name="manga",
-        description="Name of the manga"
-    )
+        description="Name of the manga")
     animeSl_limit.default=5,
     animeSl_limit.max_value=20
     @manga.subcommand(
-        name="search", description="Search for manga"
-    )
+        name="search", description="Search for manga")
     async def mangasearch(self, ctx:Interaction, manga:str=mangaSl_name, limit:int=animeSl_limit):
         print("search used")
-        r = requests.get(url=f"{mal_url}/manga?q={manga}&limit={limit}", headers=headers)
+        r = requests.get(url=f"{mal_url}/manga?q={manga}&limit={limit}", headers=auth)
         print(r.status_code, f"\n{r.url}")
         if r.status_code == 200:
             r_dict = r.json()['data']
@@ -302,9 +319,9 @@ class Manga(commands.Cog):
             await ctx.response.send_message(content=f"Not found '{manga}'", ephemeral=True)
         
         
-    @manga.subcommand(name="info", description=("manga info"))
+    @manga.subcommand(name="info", description=("Information on a manga"))
     async def mangainfo(self, ctx:Interaction, name:str=mangaSl_name):
-        manga  = requests.get(url=f"{mal_url}/manga?q={name}&limit={5}", headers=headers)
+        manga  = requests.get(url=f"{mal_url}/manga?q={name}&limit={5}", headers=auth)
         r = manga.json()['data']
         text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(manga.json()['data']))])
         print(text)
@@ -333,40 +350,64 @@ class Manga(commands.Cog):
             elif str(reaction.emoji) == "4️⃣": chosen = 3
             elif str(reaction.emoji) == "5️⃣": chosen = 4
             else: await message.remove_reaction(reaction, user)
-            try:
-                await message.clear_reactions()
-            except nextcord.errors.Forbidden:
-                print("no perms")
-        except asyncio.TimeoutError:
-            chosen = 0
+            try:await message.clear_reactions()
+            except nextcord.errors.Forbidden:print("no perms")
+        except asyncio.TimeoutError:chosen = 0
         
         if manga.status_code == 200:
             print(manga.json())
             mangaID = manga.json()['data'][chosen]['node']['id']
-            response = requests.get(url=f"{mal_url}/manga/{mangaID}?fields=title,main_picture,start_date,end_date,synopsis,mean,rank,nsfw,created_at,status,genres,num_episodes,average_episode_duration,recommendations,studios",  headers=headers)
+            response = requests.get(url=f"{mal_url}/manga/{mangaID}?"+"fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_volumes,num_chapters,authors{first_name,last_name},pictures,background,related_anime,related_manga,recommendations,serialization",  headers=auth)
             r = response.json()
-            nsfw = ""
-            if r['nsfw'] != 'white': nsfw = "\nnfsw"
-            ep_num = f"{r['num_episodes']} episode"
-            if r['num_episodes'] < 2: ep_num = f"{ep_num}s"
-            synp = r['synopsis'].replace('\n\n','\n')
-            time_needed = f"{math.floor((r['num_episodes'] * r['average_episode_duration'])/3600)} hours {((r['num_episodes'] * r['average_episode_duration'])//60)%60} minutes"
-            genre = ", ".join([i['name'] for i in r['genres']])
-            if r['recommendations']:
-                recom = ",\n".join([r['recommendations'][i]['node']['title'] for i in range(2)])
-            else: recom = "None"
-            studio = r['studios'][0]['name']
-            if "end_date" in r :timing = f"\nfrom {r['start_date']} to {r['end_date']}"
-            else: timing = f"\nfrom {r['start_date']} to ?(airing)"
-            msg = f"{synp} \n\nStudio: {studio} \n⭐:{r['mean']} ||  🏆: {r['rank']}th \n{genre} \n{ep_num} \ntotal run time: {time_needed} \nsimilar: {recom} {nsfw} {timing}"
-            emb= nextcord.Embed(description=msg, color=nextcord.Color(0x2E51A2))
-            emb.set_author(name=r['title'], icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png",
-    		url= f"https://myanimelist.net/manga/{mangaID}")
-            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist")
+            creators = "\n"+"\n".join([f"{author['role']} by {author['node']['first_name']} {author['node']['last_name']}" for author in r['authors']])
+            titles = r['alternative_titles']['synonyms'] + [r['alternative_titles']['en'], r['title'], r['alternative_titles']['ja']]
+            pirate = get_mangareader(r['title'])
+            reading = [tit for tit in titles if tit in pirate.keys()][0]
+            #description of manga
+            synp = r["synopsis"].replace("\n\n", "\n")
+            #rank of manga
+            genre = ''
+            if 'genres' in r :genre = f"\n{', '.join([i['name'] for i in r['genres']])}"
+            else: genre = '\ngenre: Not available yet'
+            #recommendation/relatable mangas
+            recom = ''
+            
+            lee = len(r['recommendations'])
+            if lee >5:lee = 5
+            if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([r['recommendations'][i]['node']['title'] for i in range(lee)]))
+            #rank on MAL
+            ranga = '' #ranga is a character from Tensei Slime Datta Ken (That Time I Got Reincarnated as a Slime)
+            if 'rank' in r: 
+                ranga = f"🏆: {r['rank']}"
+                if   str(r['rank']).endswith('1'): f"{ranga}st"
+                elif str(r['rank']).endswith('2'): f"{ranga}nd"
+                elif str(r['rank']).endswith('3'): f"{ranga}rd"
+                else: ranga = f"{ranga}th"
+            else: ranga = 'Not ranked yet'
+            #score of manga on MAL
+            avg = ''
+            if 'mean' in r: avg=f"\n⭐:{r['mean']}"
+            else:avg = 'Not scored yet'
+            #status + chapters + publishing dates
+            chapters = f"\nNo. of chapter(s): {r['num_chapters']}"
+            if r['status'] == 'currently_publishing': 
+                r['title'] = f"{r['title']} (currently publishing)"
+                chapters = "\nChapter count isn't available while publishing"
+                pub_dates = f"\nPublishing since {r['start_date']}"
+            if 'serialization' in r: serialIn = f"\nSerialised in {r['serialization'][0]['node']['name']}"
+            else:serialIn = ""
+            print(reading)
+            msg = f"{synp} \n{avg} || {ranga} {creators} {chapters} {pub_dates} {serialIn} {genre} {recom} "
+            emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), url= f"https://myanimelist.net/manga/{mangaID}")
+            emb.set_author(name="Read at", icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png", url=pirate[reading])
+            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png")
             emb.set_thumbnail(url=r['main_picture']['large'])
+            make_gif(r['pictures'])
+            emb.set_image("""https://cdn.myanimelist.net/images/manga/3/80661.jpg""")
             await message.edit(embed=emb)
             print(msg)
         else:await ctx.response.send_message(content='Not found', ephemeral=True)
+        
     animeSl_limit.description='limit of manga'
     animeSl_limit.max_value = 500
     animeSl_limit.default = 20
@@ -379,7 +420,7 @@ class Manga(commands.Cog):
         
     @manga.subcommand(name='ranking', description='Manga ranking')
     async def ranks(self, ctx: Interaction, _type:str=animeSl_ranks, limit:int=animeSl_limit):
-        ranking = requests.get(f'{mal_url}/manga/ranking?ranking_type={_type}&limit={limit}', headers=headers)
+        ranking = requests.get(f'{mal_url}/manga/ranking?ranking_type={_type}&limit={limit}', headers=auth)
         title = get_key(_type)
         print(ranking.status_code)
         if ranking.status_code == 200:
@@ -436,10 +477,7 @@ class User(commands.Cog):
     @user.subcommand(name="animelist", description="User's animelist")
     async def animelist(self, ctx:Interaction, username:str=userName, listStat:str=userStatus):
         response = requests.get(url=f"{mal_url}/users/{username}/animelist?limit=1000{listStat}&sort=list_updated_at", headers=headers)
-        return response.json()
-
         
 def setup(client): 
 	client.add_cog(Manga(client))
-
 	client.add_cog(Anime(client))
