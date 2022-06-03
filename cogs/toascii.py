@@ -49,7 +49,7 @@ class ToAscii(commands.Cog):
                              choices={'ASCII text file(grayscale)':asci.Modes.ASCII, 
                                       'HTML text gile(full color)':asci.Modes.HTML})
 	@nextcord.slash_command(name="toascii", description='Converts given image into ascii')
-	async def toasc(self, ctx:nextcord.Interaction, img:nextcord.Attachment, columns:int=jizz, mode:asci.Modes=convertion):
+	async def toasc(self, ctx:nextcord.Interaction, img:nextcord.Attachment, columns:int=jizz, mode=convertion):
 		name, ext = os.path.splitext(img.filename)
 		await img.save(f'temp.{ext}')
 		emb = nextcord.Embed(title=f'Converting {name}.{ext}', description = 'Please wait. \nBigger files/convertion size takes long to convert',color=nextcord.Color.red)
