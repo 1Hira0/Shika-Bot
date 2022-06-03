@@ -108,7 +108,7 @@ My Prefix is `%`
 
         print("Help was ran")
     
-    @commands.slash_command(name="ping", description="sends bot latency")
+    @nextcord.slash_command(name="ping", description="sends bot latency")
     async def ping(self, ctx:Interaction):
         start_time = (ctx.message.id >> 22) + discEpoch
         await ctx.response.send_message("Checking ping! :ping_pong:")
@@ -117,7 +117,7 @@ My Prefix is `%`
         await ctx.edit_original_message(content=f'Websocket: {round(self.client.latency*1000)}ms | RoundaBout {end_time-start_time}ms')
 
     # THE AVATAR COMMAND 
-    @commands.slash_command(name="avatar", description="sends avatar")
+    @nextcord.slash_command(name="avatar", description="sends avatar")
     async def checkAV(self, ctx:Interaction, 
                       adult_video : nextcord.Member=SlashOption(
                                                                 name="member", description="member mention/ID", required=False, autocomplete=True
