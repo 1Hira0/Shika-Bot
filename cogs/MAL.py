@@ -17,6 +17,7 @@ thisyear = datetime.date.today().year
 mal_url = 'https://api.myanimelist.net/v2'
 headers = {'Authorization': f"Bearer {os.environ['mal']}"}
 auth = {'X-MAL-CLIENT-ID':f"{os.environ['clientid']}"}
+mal_icon = "https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
 
 
 def make_gif(pictures):
@@ -55,6 +56,41 @@ animeSl_limit=SlashOption(
         min_value=1, max_value=20, 
         description="Amount of search results")
 
+class Choose(nextcord.ui.View):
+    def __init__(self, id):
+        super().__init__(timeout=60)
+        self.value = 0
+        self.authorID = id
+    @nextcord.ui.button(label='1', style=nextcord.ButtonStyle.blurple)
+    async def option1(self, button:nextcord.ui.Button, ctx:Interaction):
+        self.value = 0
+        button.disabled = True
+        self.stop()
+
+    @nextcord.ui.button(label='2', style=nextcord.ButtonStyle.blurple)
+    async def option2(self, button:nextcord.ui.Button, ctx:Interaction):
+        self.value = 1
+        self.stop()
+
+    @nextcord.ui.button(label='3', style=nextcord.ButtonStyle.blurple)
+    async def option3(self, button:nextcord.ui.Button, ctx:Interaction):
+        self.value = 2
+        self.stop()
+
+    @nextcord.ui.button(label='4', style=nextcord.ButtonStyle.blurple)
+    async def option4(self, button:nextcord.ui.Button, ctx:Interaction):
+        self.value = 3
+        self.stop()
+
+    @nextcord.ui.button(label='5', style=nextcord.ButtonStyle.blurple)
+    async def option5(self, button:nextcord.ui.Button, ctx:Interaction):
+        self.value = 4
+        self.stop()
+    async def interaction_check(self, interaction: Interaction):
+        return interaction.user.id == self.authorID
+    
+    
+
 def get_key(val):
     global cho
     for key, value in cho.items():
@@ -77,62 +113,38 @@ class Anime(commands.Cog):
     )
     async def search(self, ctx:Interaction, anime:str=animeSl_name, limit:int=animeSl_limit):
         print("search used")
-        r = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}", headers=auth)
-        print(r.status_code, f"\n{r.url}")
-        if r.status_code == 200:
-            r_dict = r.json()['data']
-            text = "\n".join([f"{i+1}. {r_dict[i]['node']['title']}" for i in range(len(r_dict))])
-            print(f"\n'{text}'\n")
+        response = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}", headers=auth)
+        print(response.status_code, f"\n{response.url}")
+        if response.status_code == 200:
+            r = response.json()['data']
+            text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(r))])
             emb=nextcord.Embed(description=text, color=nextcord.Color(0x2E51A2))
-            emb.set_author(name=f"Search results for {anime}", 
-    		url=f"https://myanimelist.net/search/all?q={anime}&cat=all", 
-    		icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
-            )
+            emb.set_author(name=f"Search results for {anime}", icon_url=mal_icon,
+    		               url=f"https://myanimelist.net/search/all?q={anime}&cat=all")
             emb.set_footer(text="Want more info? Tap on the menu to see more information")
             await ctx.response.send_message(embed=emb)
+
         elif r.status_code!= 400: 
             await ctx.response.send_message(content=f"Not found '{anime}'", ephemeral=True)
     
     
     @anime.subcommand(name="info", description=("anime info"))
     async def info(self, ctx:Interaction, name:str=animeSl_name):
+        view = Choose(id=ctx.user.id)
         anime  = requests.get(url=f"{mal_url}/anime?q={name}&limit={5}", headers=auth)
         r = anime.json()['data']
-        text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(anime.json()['data']))])
-        print(text)
+        text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(r))])
         emb=nextcord.Embed(description=text, color=nextcord.Color(0x2E51A2))
-        emb.set_author(name=f"For {name}",
-    	               url=f'https://myanimelist.net/search/all?q={name.replace(" ", "%20")}&cat=all', 
-    		           icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
-            )
+        emb.set_author(name=f"For {name}", icon_url=mal_icon,
+    	               url=f'https://myanimelist.net/search/all?q={name.replace(" ", "%20")}&cat=all')
         emb.set_footer(text=f"Not in here? Tap on the title to open MyAnimelist")
-        await ctx.response.send_message(embed=emb)
-        message = await ctx.original_message()
-        await message.add_reaction("1️⃣")
-        await message.add_reaction("2️⃣")
-        await message.add_reaction("3️⃣")
-        await message.add_reaction("4️⃣")
-        await message.add_reaction("5️⃣")
+        await ctx.response.send_message(embed=emb, view=view)
+        await view.wait()
+        chosen = view.value
         
-        def check(reaction, user):
-            return user == ctx.user and str(reaction.emoji) in ["1️⃣","2️⃣", "3️⃣", "4️⃣", "5️⃣"]
-        try:
-            reaction, user = await self.client.wait_for("reaction_add", timeout=60, check=check)
-            if   str(reaction.emoji) == "1️⃣": chosen = 0
-            elif str(reaction.emoji) == "2️⃣": chosen = 1
-            elif str(reaction.emoji) == "3️⃣": chosen = 2
-            elif str(reaction.emoji) == "4️⃣": chosen = 3
-            elif str(reaction.emoji) == "5️⃣": chosen = 4
-            else: await message.remove_reaction(reaction, user)
-            try:
-                await message.clear_reactions()
-            except nextcord.errors.Forbidden:
-                print("no perms")
-        except asyncio.TimeoutError:
-            chosen = 0
     
         if anime.status_code == 200:
-
+            await ctx.delete_original_message()
             animeID = anime.json()['data'][chosen]['node']['id']
             response = requests.get(url=f"{mal_url}/anime/{animeID}?fields=title,main_picture,start_date,end_date,synopsis,mean,rank,nsfw,created_at,status,genres,num_episodes,average_episode_duration,recommendations,studios",  headers=auth)
             r = response.json()
@@ -177,9 +189,9 @@ class Anime(commands.Cog):
             emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), url= f"https://myanimelist.net/anime/{animeID}")
             emb.set_author(name="Tap here to play", icon_url="https://animixplay.to/favicon.ico",
     		url= f"https://animixplay.to/anime/{animeID}")
-            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png")
+            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url=mal_icon)
             emb.set_thumbnail(url=r['main_picture']['large'])
-            await message.edit(embed=emb)
+            await ctx.send(embed=emb)
             print(msg)
         else:await ctx.response.send_message(content='Not found', ephemeral=True)
     animeSl_limit.description='limit of anime'
@@ -208,7 +220,7 @@ class Anime(commands.Cog):
             emb=nextcord.Embed(description=contents[cur_page-1], color=nextcord.Color(0x2E51A2))
             emb.set_author(name=title, url=f'https://myanimelist.net/topanime.php?type={_type}', 
     				#, 
-    		#icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
+    		#icon_url=mal_icon
             )
             emb.set_footer(text=f"Page {cur_page}/{pages}")
             message = await ctx.response.send_message(embed=emb)
@@ -260,7 +272,7 @@ class Anime(commands.Cog):
             emb=nextcord.Embed(description=contents[cur_page-1], color=nextcord.Color(0x2E51A2))
             emb.set_author(name=f"{r_dict['season']['season'].capitalize()} {r_dict['season']['year']}", 
                            url=f"https://myanimelist.net/anime/season/{r_dict['season']['year']}/{r_dict['season']['season']}",  
-                           icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png")
+                           icon_url=mal_icon)
             emb.set_footer(text=f"Page {cur_page}/{pages} | click on the title for more info")
             message = await ctx.response.send_message(embed=emb)
             if message is None: message = await ctx.original_message()
@@ -312,7 +324,7 @@ class Manga(commands.Cog):
             emb=nextcord.Embed(description=text, color=nextcord.Color(0x2E51A2))
             emb.set_author(name=f"Search results for {manga}", 
     		url=f"https://myanimelist.net/search/all?q={manga}&cat=all", 
-    		icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
+    		icon_url=mal_icon
             )
             await ctx.response.send_message(embed=emb)
         elif r.status_code == 400: 
@@ -321,6 +333,7 @@ class Manga(commands.Cog):
         
     @manga.subcommand(name="info", description=("Information on a manga"))
     async def mangainfo(self, ctx:Interaction, name:str=mangaSl_name):
+        view = Choose(id=ctx.user.id)
         manga  = requests.get(url=f"{mal_url}/manga?q={name}&limit={5}", headers=auth)
         r = manga.json()['data']
         text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(manga.json()['data']))])
@@ -329,40 +342,31 @@ class Manga(commands.Cog):
         emb.set_author(name=f"For {name}"
     	, url=f'https://myanimelist.net/search/all?q={name.replace(" ", "%20")}&cat=all', 
     		#, 
-    		#icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
+    		#icon_url=mal_icon
             )
         emb.set_footer(text=f"Not in here? Tap on the title to open MyAnimelist")
-        await ctx.response.send_message(embed=emb)
-        message = await ctx.original_message()
-        await message.add_reaction("1️⃣")
-        await message.add_reaction("2️⃣")
-        await message.add_reaction("3️⃣")
-        await message.add_reaction("4️⃣")
-        await message.add_reaction("5️⃣")
-        
-        def check(reaction, user):
-            return user == ctx.user and str(reaction.emoji) in ["1️⃣","2️⃣", "3️⃣", "4️⃣", "5️⃣"]
-        try:
-            reaction, user = await self.client.wait_for("reaction_add", timeout=60, check=check)
-            if   str(reaction.emoji) == "1️⃣": chosen = 0
-            elif str(reaction.emoji) == "2️⃣": chosen = 1
-            elif str(reaction.emoji) == "3️⃣": chosen = 2
-            elif str(reaction.emoji) == "4️⃣": chosen = 3
-            elif str(reaction.emoji) == "5️⃣": chosen = 4
-            else: await message.remove_reaction(reaction, user)
-            try:await message.clear_reactions()
-            except nextcord.errors.Forbidden:print("no perms")
-        except asyncio.TimeoutError:chosen = 0
+        await ctx.response.send_message(embed=emb, view=view)
+        await view.wait()
+        chosen = view.value
         
         if manga.status_code == 200:
+            await ctx.delete_original_message()
             print(manga.json())
             mangaID = manga.json()['data'][chosen]['node']['id']
             response = requests.get(url=f"{mal_url}/manga/{mangaID}?"+"fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_volumes,num_chapters,authors{first_name,last_name},pictures,background,related_anime,related_manga,recommendations,serialization",  headers=auth)
             r = response.json()
+            print("Got Manga")
             creators = "\n"+"\n".join([f"{author['role']} by {author['node']['first_name']} {author['node']['last_name']}" for author in r['authors']])
-            titles = r['alternative_titles']['synonyms'] + [r['alternative_titles']['en'], r['title'], r['alternative_titles']['ja']]
+            titles = [tit.lower() for tit in r['alternative_titles']['synonyms']] + [r['alternative_titles']['en'].lower(), r['title'].lower(), r['alternative_titles']['ja']]
             pirate = get_mangareader(r['title'])
-            reading = [tit for tit in titles if tit in pirate.keys()][0]
+            try:
+                reading = [tit for tit in titles if tit.lower() in pirate.keys()][0]
+                print(reading)
+            except IndexError:
+                reading='reading'
+                pirate[reading]= f"https://mangareader.to/search?keyword={r['title']}".replace(' ', "+")
+                print(pirate[reading])
+				
             #description of manga
             synp = r["synopsis"].replace("\n\n", "\n")
             #rank of manga
@@ -379,10 +383,10 @@ class Manga(commands.Cog):
             ranga = '' #ranga is a character from Tensei Slime Datta Ken (That Time I Got Reincarnated as a Slime)
             if 'rank' in r: 
                 ranga = f"🏆: {r['rank']}"
-                if   str(r['rank']).endswith('1'): f"{ranga}st"
-                elif str(r['rank']).endswith('2'): f"{ranga}nd"
-                elif str(r['rank']).endswith('3'): f"{ranga}rd"
-                else: ranga = f"{ranga}th"
+                if   str(r['rank']).endswith('1'): ranga+="st"
+                elif str(r['rank']).endswith('2'): ranga+="nd"
+                elif str(r['rank']).endswith('3'): ranga+="rd"
+                else: ranga += "th"
             else: ranga = 'Not ranked yet'
             #score of manga on MAL
             avg = ''
@@ -390,21 +394,26 @@ class Manga(commands.Cog):
             else:avg = 'Not scored yet'
             #status + chapters + publishing dates
             chapters = f"\nNo. of chapter(s): {r['num_chapters']}"
-            if r['status'] == 'currently_publishing': 
+            if r['status'] == "not_yet_published": 
+                pub_dates = chapters = ""
+                r['title'] += " (not published yet)"
+            elif r['status'] == 'currently_publishing': 
                 r['title'] = f"{r['title']} (currently publishing)"
                 chapters = "\nChapter count isn't available while publishing"
                 pub_dates = f"\nPublishing since {r['start_date']}"
+            else: pub_dates = f"\n{r['start_date']} to {r['end_date']}"
             if 'serialization' in r: serialIn = f"\nSerialised in {r['serialization'][0]['node']['name']}"
             else:serialIn = ""
-            print(reading)
             msg = f"{synp} \n{avg} || {ranga} {creators} {chapters} {pub_dates} {serialIn} {genre} {recom} "
-            emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), url= f"https://myanimelist.net/manga/{mangaID}")
-            emb.set_author(name="Read at", icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png", url=pirate[reading])
-            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png")
+            emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), 
+                                url= f"https://myanimelist.net/manga/{mangaID}")
+            emb.set_author(icon_url=mal_icon, 
+                           name="Read at", url=pirate[reading])
+            emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url=mal_icon)
             emb.set_thumbnail(url=r['main_picture']['large'])
             make_gif(r['pictures'])
-            emb.set_image("""https://cdn.myanimelist.net/images/manga/3/80661.jpg""")
-            await message.edit(embed=emb)
+            #emb.set_image("""https://cdn.myanimelist.net/images/manga/3/80661.jpg""")
+            await ctx.send(embed=emb)
             print(msg)
         else:await ctx.response.send_message(content='Not found', ephemeral=True)
         
@@ -433,7 +442,7 @@ class Manga(commands.Cog):
             emb=nextcord.Embed(description=contents[cur_page-1], color=nextcord.Color(0x2E51A2))
             emb.set_author(name=title, url=f'https://myanimelist.net/topmanga.php{_type}', 
     				#, 
-    		#icon_url="https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
+    		#icon_url=mal_icon
             )
             emb.set_footer(text=f"Page {cur_page}/{pages}")
             message = await ctx.response.send_message(embed=emb)
