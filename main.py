@@ -5,6 +5,7 @@ import nextcord, os, time
 
 
 client = commands.Bot(command_prefix="%")
+client.remove_command('help')
 
 @client.event
 async def on_ready(): print(f"{client.user} has joined the game")
