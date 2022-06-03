@@ -11,7 +11,7 @@ weather_reqs = {"Current weather":"current.json",
 class Weather(commands.Cog):
     def __init__(self, client): self.client = client
     
-    @commands.slash_command(name="weather")
+    @nextcord.slash_command(name="weather")
     async def weather(ctx:Interaction): ...
 
     @weather.subcommand(name='current',description='Current Weather')
