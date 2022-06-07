@@ -1,32 +1,26 @@
-import asyncio
-import datetime
 import math
 import os
-from io import BytesIO
+from datetime import date
 
 import nextcord
 import requests
-from nextcord import Interaction, SlashOption
-from nextcord.ext import commands
-from PIL import Image
-
 from mangareader import get_mangareader
+from nextcord import ButtonStyle, Interaction, SlashOption, ui
+from nextcord.ext import commands
 
-thisyear = datetime.date.today().year
+thisyear = date.today().year
 
 mal_url = 'https://api.myanimelist.net/v2'
 headers = {'Authorization': f"Bearer {os.environ['mal']}"}
 auth = {'X-MAL-CLIENT-ID':f"{os.environ['clientid']}"}
 mal_icon = "https://cdn.myanimelist.net/img/sp/icon/apple-touch-icon-256.png"
+animix_icon = 'https://animixplay.to/icon.png'
+mangareader_icon = "https://mangareader.to/images/apple-touch-icon.png"
 
-
-def make_gif(pictures):
-    frames = [Image.open(BytesIO(requests.get(url=image['medium']).content)) for image in pictures]
-    frame_one = frames[0]
-    frame_one.save("manga.gif", format="GIF", append_images=frames,
-               save_all=True, duration=1000, loop=0)
-    return "manga.gif"
-
+seasons = {"January":"winter", "February":"winter", "March"    :"winter",
+           "April"  :"spring", "May"     :"spring", "June"     :"spring",
+	       "July"   :"summer", "August"  :"summer", "September":"summer",
+           "October":"fall"  , "November":"fall"  , "December" :"fall"  }
 cho = {
     "Top Anime Series"       :'all'         ,
     "Top Airing Anime"       :'airing'      ,
@@ -37,7 +31,6 @@ cho = {
     "Top Anime Specials"     :'special'     ,
     "Top Anime by Popularity":'bypopularity',
     "Top Favorited Anime"    :'favorite'    }
-
 cho2 = {
     "All"           :"all"         ,
     "Top Manga"     :"manga"       ,
@@ -49,54 +42,87 @@ cho2 = {
     "Most Popular"  :"bypopularity",
     "Most Favorited":"favorite"}
 
-animeSl_limit=SlashOption(
-        name="limit",
-        default=5,
-        required=False, 
-        min_value=1, max_value=20, 
+animeSl_limit=SlashOption(name="limit",default=5,
+        required=False, min_value=1, max_value=20, 
         description="Amount of search results")
 
+class Pages(ui.View):
+    def __init__(self, pages:list, embed:nextcord.Embed, eid:int):
+        super().__init__()
+        self.page_no = 1
+        self.contents = pages
+        self.embed = embed
+        self.page_nos = len(pages)
+        self.authorID = eid
+    @ui.button(emoji="◀", style=ButtonStyle.green, disabled=True)
+    async def backward(self, button:ui.Button, ctx:Interaction):
+        if self.page_no == self.page_nos: 
+            self.forward.disabled = False
+            self.forward.style= ButtonStyle.green
+        self.page_no -= 1
+        self.embed.description=self.contents[self.page_no-1]
+        if self.page_no == 1: 
+            button.disabled = True
+            button.style = ButtonStyle.danger
+        self.no.label = f"{self.page_no}/{self.page_nos}"
+        await ctx.response.edit_message(embed=self.embed, view=self)
+    	
+    @ui.button(label='1', disabled=True, style=ButtonStyle.green)
+    async def no(self, button:ui.Button, ctx:Interaction):return
+
+    @ui.button(emoji="▶", style=ButtonStyle.green)
+    async def forward(self, button:ui.Button, ctx:Interaction):
+        self.page_no += 1
+        self.embed.description=self.contents[self.page_no-1]
+        if self.page_no == self.page_nos: 
+            button.disabled = True
+            button.style = ButtonStyle.danger
+        if self.page_no == 2:
+            self.backward.disabled = False
+            self.backward.style=ButtonStyle.green
+            self.no.label = f"{self.page_no}/{self.page_nos}"
+        await ctx.response.edit_message(embed=self.embed, view=self)
+    		
+    async def interaction_check(self, interaction: Interaction):
+    	return interaction.user.id == self.authorID
+
 class Choose(nextcord.ui.View):
-    def __init__(self, id):
+    def __init__(self, id:int):
         super().__init__(timeout=60)
         self.value = 0
         self.authorID = id
+        self.options = [self.option1,self.option2,self.option3,self.option4,self.option5]
     @nextcord.ui.button(label='1', style=nextcord.ButtonStyle.blurple)
     async def option1(self, button:nextcord.ui.Button, ctx:Interaction):
         self.value = 0
-        button.disabled = True
+        for butt in self.options:butt.disabled = True
         self.stop()
 
     @nextcord.ui.button(label='2', style=nextcord.ButtonStyle.blurple)
     async def option2(self, button:nextcord.ui.Button, ctx:Interaction):
         self.value = 1
+        for butt in self.options:butt.disabled = True
         self.stop()
 
     @nextcord.ui.button(label='3', style=nextcord.ButtonStyle.blurple)
     async def option3(self, button:nextcord.ui.Button, ctx:Interaction):
         self.value = 2
+        for butt in self.options:butt.disabled = True
         self.stop()
 
     @nextcord.ui.button(label='4', style=nextcord.ButtonStyle.blurple)
     async def option4(self, button:nextcord.ui.Button, ctx:Interaction):
         self.value = 3
+        for butt in self.options:butt.disabled = True
         self.stop()
 
     @nextcord.ui.button(label='5', style=nextcord.ButtonStyle.blurple)
     async def option5(self, button:nextcord.ui.Button, ctx:Interaction):
         self.value = 4
+        for butt in self.options:butt.disabled = True
         self.stop()
     async def interaction_check(self, interaction: Interaction):
         return interaction.user.id == self.authorID
-    
-    
-
-def get_key(val):
-    global cho
-    for key, value in cho.items():
-        if val == value:
-             return key
-        return "key doesn't exist"
 
 class Anime(commands.Cog):
     
@@ -120,8 +146,8 @@ class Anime(commands.Cog):
             text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(r))])
             emb=nextcord.Embed(description=text, color=nextcord.Color(0x2E51A2))
             emb.set_author(name=f"Search results for {anime}", icon_url=mal_icon,
-    		               url=f"https://myanimelist.net/search/all?q={anime}&cat=all")
-            emb.set_footer(text="Want more info? Tap on the menu to see more information")
+    		               url=f"https://myanimelist.net/anime.php?q={anime.replace(' ', '%20')}&cat=anime")
+            emb.set_footer(text="Want more info? Tap on the title to see more information")
             await ctx.response.send_message(embed=emb)
 
         elif r.status_code!= 400: 
@@ -144,9 +170,8 @@ class Anime(commands.Cog):
         
     
         if anime.status_code == 200:
-            await ctx.delete_original_message()
             animeID = anime.json()['data'][chosen]['node']['id']
-            response = requests.get(url=f"{mal_url}/anime/{animeID}?fields=title,main_picture,start_date,end_date,synopsis,mean,rank,nsfw,created_at,status,genres,num_episodes,average_episode_duration,recommendations,studios",  headers=auth)
+            response = requests.get(url=f"{mal_url}/anime/{animeID}?fields=title,main_picture,alternative_titles,start_date,end_date,synopsis,related_anime,related_manga,mean,rank,nsfw,created_at,status,genres,rating,num_episodes,average_episode_duration,recommendations,studios,opening_themes,ending_themes",  headers=auth)
             r = response.json()
             print(r)
             #nsfw shit
@@ -167,14 +192,14 @@ class Anime(commands.Cog):
             else: genre = '\ngenre: Not available yet'
             #recommendation/relatable shows
             recom = ''
-            if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([r['recommendations'][i]['node']['title'] for i in range(len(r['recommendations']))]))
+            if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([f"[{r['recommendations'][i]['node']['title']}](https://myanimelist.net/anime/{r['recommendations'][i]['node']['id']})" for i in range(len(r['recommendations']))]))
             #studio which made this show
             studio = ''
-            if r['studios'] :studio += f"\n\nStudio: {r['studios'][0]['name']}"
+            if r['studios']: studio = "\n\nStudio(s): "+ (", ".join(f"[{studio['name']}](https://myanimelist.net/anime/producer/{studio['id']})" for studio in r['studios']))
             #start & end date of release/ airing/ not released
             if r['status'] == 'not_yet_aired':timing = "\nNot aired yet"
             elif r['status'] == 'currently_airing': timing = f"\nfrom {r['start_date']} to ?(airing)"
-            elif r['status'] == 'finished_airing':timing = f"\nfrom {r['start_date']} to {r['end_date']}"
+            elif r['status'] == 'finished_airing':timing = f"\nfrom {r['start_date']} to {r['end_date']} - Finished airing"
             #rank on MAL
             ranga = '' #ranga is a character from Tensei Slime Datta Ken (That Time I Got Reincarnated as a Slime)
             if 'rank' in r: 
@@ -185,30 +210,53 @@ class Anime(commands.Cog):
             else: ranga = 'Not ranked yet'
             avg = 'Not scored yet'
             if 'mean' in r: avg=f"\n⭐:{r['mean']}"
-            msg = f"{synp} {studio} {avg} ||  {ranga} {genre} {ep_num} {time_needed} {recom} {nsfw} {timing}"
-            emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), url= f"https://myanimelist.net/anime/{animeID}")
-            emb.set_author(name="Tap here to play", icon_url="https://animixplay.to/favicon.ico",
-    		url= f"https://animixplay.to/anime/{animeID}")
+            rating=''
+            if 'rating' in r: rating = "\nAge rating: "+r['rating']
+            r_manga = ''
+            if r['related_manga']: 
+                r_manga = '\nRelated manga: ' + '\n'.join(
+                    [f"{_manga['relation_type_formatted']}: [{_manga['node']['title']}](https://myanimelist.net/manga/{_manga['node']['id']})" for _manga in r['related_manga']]
+                    )
+            r_anime = ""
+            if r['related_anime']: 
+                r_anime = '\nRelated anime: ' + '\n'.join(
+                    [f"{_anime['relation_type_formatted']}: [{_anime['node']['title']}](https://myanimelist.net/anime/{_anime['node']['id']})" for _anime in r['related_anime']]
+                    ) 
+            ops = ''
+            if 'opening_themes' in r: 
+                if r['opening_themes']:ops = "\n" + '\n'.join(song['text'] for song in r['opening_themes'])
+            eds = ''
+            if 'ending_themes' in r: 
+                if r['ending_themes'] : eds = "\n" + '\n'.join(song['text'] for song in r['ending_themes'])
+            contents = [f"**{r['alternative_titles']['en']}** \n{synp}", f" {studio} {avg} ||  {ranga} {genre} {ep_num} {time_needed} {nsfw} {timing} {rating} {ops} {eds}", f"{recom} {r_anime} {r_manga}"]
+            emb= nextcord.Embed(title=r['title'], description=contents[0], color=nextcord.Color(0x2E51A2), url= f"https://myanimelist.net/anime/{animeID}")
+            emb.set_author(name="Tap here to play", icon_url=animix_icon,
+    		               url= f"https://animixplay.to/anime/{animeID}")
             emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url=mal_icon)
             emb.set_thumbnail(url=r['main_picture']['large'])
-            await ctx.send(embed=emb)
-            print(msg)
+            butt = Pages(pages=contents, embed=emb, eid=ctx.user.id)
+            await ctx.edit_original_message(embed=emb, view=butt)
+            timed_out = await butt.wait()
+            butt.backward.disabled = True
+            butt.forward.style = ButtonStyle.grey
+            butt.no.style = ButtonStyle.grey
+            butt.backward.style = ButtonStyle.grey
+            butt.forward.disabled = True
+            await ctx.edit_original_message(view=butt)
         else:await ctx.response.send_message(content='Not found', ephemeral=True)
+
     animeSl_limit.description='limit of anime'
     animeSl_limit.max_value = 500
     animeSl_limit.default = 20
-    animeSl_ranks=SlashOption(
-    	name="type",
-    	description='Type of ranking',
-    	required=True,
-    	choices=cho
-    )
+    animeSl_ranks=SlashOption(name="type", description='Type of ranking',
+    							required=True, choices=list(cho.keys()))
     
     
     @anime.subcommand(name='ranking', description='Anime ranking')
-    async def rank(self, ctx: Interaction, _type:str=animeSl_ranks, limit:int=animeSl_limit):
+    async def rank(self, ctx: Interaction, tip:str=animeSl_ranks, limit:int=animeSl_limit):
+        global cho
+        _type = cho[tip]
         ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}', headers=auth)
-        title = get_key(_type)
         print(ranking.status_code)
         if ranking.status_code == 200:
             r = ranking.json()['data']
@@ -218,50 +266,28 @@ class Anime(commands.Cog):
             pages = len(contents)
             cur_page = 1
             emb=nextcord.Embed(description=contents[cur_page-1], color=nextcord.Color(0x2E51A2))
-            emb.set_author(name=title, url=f'https://myanimelist.net/topanime.php?type={_type}', 
-    				#, 
-    		#icon_url=mal_icon
-            )
+            emb.set_author(name=tip, url=f'https://myanimelist.net/topanime.php?type={_type}', 
+    		icon_url=mal_icon)
             emb.set_footer(text=f"Page {cur_page}/{pages}")
-            message = await ctx.response.send_message(embed=emb)
-            if message is None: message = await ctx.original_message()
-    
-            await message.add_reaction("◀️")
-            await message.add_reaction("▶️")
-    
-            def check(reaction, user):
-                return user == ctx.user and str(reaction.emoji) in ["◀️", "▶️"]
-    
-            while True:
-                try:
-                    reaction, user = await self.client.wait_for("reaction_add", timeout=60, check=check)
-                    if str(reaction.emoji) == "▶️" and cur_page != pages:
-                        cur_page += 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages}")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-    
-                    elif str(reaction.emoji) == "◀️" and cur_page > 1:
-                        cur_page -= 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages}")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-    
-                    else:
-                        await message.remove_reaction(reaction, user)
-                except asyncio.TimeoutError:
-                    break
+            butt = Pages(pages=contents, embed=emb, eid=ctx.user.id)
+            await ctx.response.send_message(embed=emb, view=butt)
+            await butt.wait()
+            butt.backward.disabled = True
+            butt.forward.style = ButtonStyle.grey
+            butt.no.style = ButtonStyle.grey
+            butt.backward.style = ButtonStyle.grey
+            butt.forward.disabled = True
+            await ctx.edit_original_message(view=butt)
+            
     animeSl_limit.max_value = 100
     animeSl_year = SlashOption(name="year", description="year of anime release", required=True, min_value=1965, max_value=thisyear, default=thisyear)
-    animeSl_season = SlashOption(name="season", description="season of anime release", required=True, choices=["Current", "Winter", "Fall", "Summer", "Spring"], default="Current")
+    animeSl_season = SlashOption(name="season", description="season of anime release", required=True, choices=seasons)
     @anime.subcommand(name='season', description='Anime of seasons')
     async def seasonal(self, ctx:Interaction, year:int=animeSl_year, season:str=animeSl_season, limit:int=animeSl_limit):
-        response = requests.get(url=f"{mal_url}/anime/season/{year}/{season}?limit={limit}")
+        response = requests.get(url=f"{mal_url}/anime/season/{year}/{season}?limit={limit}", headers=auth)
+        print(response.text)
         if response.status_code == 200:
             r_dict = response.json()
-            print(r_dict)
             contents = []
             for i in range(int(len(r_dict['data'])/10)): 
                 try:
@@ -273,33 +299,17 @@ class Anime(commands.Cog):
             emb.set_author(name=f"{r_dict['season']['season'].capitalize()} {r_dict['season']['year']}", 
                            url=f"https://myanimelist.net/anime/season/{r_dict['season']['year']}/{r_dict['season']['season']}",  
                            icon_url=mal_icon)
-            emb.set_footer(text=f"Page {cur_page}/{pages} | click on the title for more info")
-            message = await ctx.response.send_message(embed=emb)
-            if message is None: message = await ctx.original_message()
-            await message.add_reaction("◀️")
-            await message.add_reaction("▶️")
-            def check(reaction, user):
-                return user == ctx.user and str(reaction.emoji) in ["◀️", "▶️"]
-            while True:
-                try:
-                    reaction, user = await self.client.wait_for("reaction_add", timeout=60, check=check)
-                    if str(reaction.emoji) == "▶️" and cur_page != pages:
-                        cur_page += 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages} | click on the title for more info")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-                    elif str(reaction.emoji) == "◀️" and cur_page > 1:
-                        cur_page -= 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages} | click on the title for more info")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-                    else:
-                        await message.remove_reaction(reaction, user)
-                except asyncio.TimeoutError:
-                    break
-
+            emb.set_footer(text=f"Want more info? Tap on the title for more info")
+            butt = Pages(pages=contents, embed=emb, eid=ctx.user.id)
+            await ctx.response.send_message(embed=emb, view=butt)
+            await butt.wait()
+            butt.backward.disabled = True
+            butt.forward.style = ButtonStyle.grey
+            butt.no.style = ButtonStyle.grey
+            butt.backward.style = ButtonStyle.grey
+            butt.forward.disabled = True
+            await ctx.edit_original_message(view=butt)
+        elif response.status_code <= 400:await ctx.send(content=f"error:{response.text}", ephemeral=True)
 
 class Manga(commands.Cog):
     def __init__(self, client): self.client = client
@@ -350,7 +360,6 @@ class Manga(commands.Cog):
         chosen = view.value
         
         if manga.status_code == 200:
-            await ctx.delete_original_message()
             print(manga.json())
             mangaID = manga.json()['data'][chosen]['node']['id']
             response = requests.get(url=f"{mal_url}/manga/{mangaID}?"+"fields=id,title,main_picture,alternative_titles,start_date,end_date,synopsis,mean,rank,popularity,num_list_users,num_scoring_users,nsfw,created_at,updated_at,media_type,status,genres,my_list_status,num_volumes,num_chapters,authors{first_name,last_name},pictures,background,related_anime,related_manga,recommendations,serialization",  headers=auth)
@@ -378,7 +387,7 @@ class Manga(commands.Cog):
             
             lee = len(r['recommendations'])
             if lee >5:lee = 5
-            if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([r['recommendations'][i]['node']['title'] for i in range(lee)]))
+            if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([f"[{r['recommendations'][i]['node']['title']}](https://myanimelist.net/manga/{r['recommendations'][i]['node']['id']})" for i in range(len(['recommendations']))]))
             #rank on MAL
             ranga = '' #ranga is a character from Tensei Slime Datta Ken (That Time I Got Reincarnated as a Slime)
             if 'rank' in r: 
@@ -402,79 +411,62 @@ class Manga(commands.Cog):
                 chapters = "\nChapter count isn't available while publishing"
                 pub_dates = f"\nPublishing since {r['start_date']}"
             else: pub_dates = f"\n{r['start_date']} to {r['end_date']}"
-            if 'serialization' in r: serialIn = f"\nSerialised in {r['serialization'][0]['node']['name']}"
-            else:serialIn = ""
-            msg = f"{synp} \n{avg} || {ranga} {creators} {chapters} {pub_dates} {serialIn} {genre} {recom} "
+            serialIn = ""
+            if 'serialization' in r: 
+                try:
+                    serialIn = f"\nSerialised in {r['serialization'][0]['node']['name']}"
+                except IndexError: None
+            msg = [f"{synp} ",f"\n{avg} || {ranga} {creators} {chapters} {pub_dates} {serialIn} {genre} {recom} "]
             emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), 
                                 url= f"https://myanimelist.net/manga/{mangaID}")
-            emb.set_author(icon_url=mal_icon, 
+            emb.set_author(icon_url=mangareader_icon, 
                            name="Read at", url=pirate[reading])
             emb.set_footer(text="Want more info? Tap on the title to open it on MyAnimelist", icon_url=mal_icon)
             emb.set_thumbnail(url=r['main_picture']['large'])
-            make_gif(r['pictures'])
-            #emb.set_image("""https://cdn.myanimelist.net/images/manga/3/80661.jpg""")
-            await ctx.send(embed=emb)
             print(msg)
+            butt = Pages(pages=msg, embed=emb, eid=ctx.user.id)
+            await ctx.edit_original_message(embed=emb, view=butt)
+            await butt.wait()
+            butt.backward.disabled = True
+            butt.forward.style = ButtonStyle.grey
+            butt.no.style = ButtonStyle.grey
+            butt.backward.style = ButtonStyle.grey
+            butt.forward.disabled = True
+            await ctx.edit_original_message(view=butt)
         else:await ctx.response.send_message(content='Not found', ephemeral=True)
         
     animeSl_limit.description='limit of manga'
     animeSl_limit.max_value = 500
     animeSl_limit.default = 20
-    animeSl_ranks=SlashOption(
-    	name="type",
+    mangaSL_ranks=SlashOption(name="type",
     	description='Type of ranking',
     	required=True,
-    	choices=cho
-    )
+    	choices=list(cho2.keys()))
         
     @manga.subcommand(name='ranking', description='Manga ranking')
-    async def ranks(self, ctx: Interaction, _type:str=animeSl_ranks, limit:int=animeSl_limit):
+    async def ranks(self, ctx: Interaction, tip:str=mangaSL_ranks, limit:int=animeSl_limit):
+        global cho2
+        _type = cho2[tip]
         ranking = requests.get(f'{mal_url}/manga/ranking?ranking_type={_type}&limit={limit}', headers=auth)
-        title = get_key(_type)
         print(ranking.status_code)
         if ranking.status_code == 200:
             r = ranking.json()['data']
             contents = []
             for i in range(int(len(r)/10)): 
                 contents.append("\n".join([f"{((i*10)+j)+1}. {r[(i*10)+j]['node']['title']}" for j in range(10)]))
-            pages = len(contents)
-            cur_page = 1
-            emb=nextcord.Embed(description=contents[cur_page-1], color=nextcord.Color(0x2E51A2))
-            emb.set_author(name=title, url=f'https://myanimelist.net/topmanga.php{_type}', 
-    				#, 
-    		#icon_url=mal_icon
-            )
-            emb.set_footer(text=f"Page {cur_page}/{pages}")
-            message = await ctx.response.send_message(embed=emb)
-            if message is None: message = await ctx.original_message()
-        
-            await message.add_reaction("◀️")
-            await message.add_reaction("▶️")
-        
-            def check(reaction, user):
-                return user == ctx.user and str(reaction.emoji) in ["◀️", "▶️"]
-        
-            while True:
-                try:
-                    reaction, user = await self.client.wait_for("reaction_add", timeout=60, check=check)
-                    if str(reaction.emoji) == "▶️" and cur_page != pages:
-                        cur_page += 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages}")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-        
-                    elif str(reaction.emoji) == "◀️" and cur_page > 1:
-                        cur_page -= 1
-                        emb.description=contents[cur_page-1]
-                        emb.set_footer(text=f"Page {cur_page}/{pages}")
-                        await ctx.edit_original_message(embed=emb)
-                        await message.remove_reaction(reaction, user)
-        
-                    else:
-                        await message.remove_reaction(reaction, user)
-                except asyncio.TimeoutError:
-                    break
+            emb=nextcord.Embed(description=contents[0], color=nextcord.Color(0x2E51A2))
+            emb.set_author(name=tip, url=f'https://myanimelist.net/topmanga.php{_type}', icon_url=mal_icon)
+            emb.set_footer(text=f"Want more info? Tap on the title to open MyAnimeList")
+            butt = Pages(pages=contents, embed=emb, eid=ctx.user.id)
+            await ctx.response.send_message(embed=emb, view=butt)
+            await butt.wait()
+            butt.forward.style = ButtonStyle.grey
+            butt.backward.disabled = True
+            butt.no.style = ButtonStyle.grey
+            butt.forward.disabled = True
+            butt.backward.style = ButtonStyle.grey
+            await ctx.edit_original_message(view=butt)            
+
 userName = SlashOption(name='username', description="User's MAL username", required=True)
 userStatus = SlashOption(name='status', description="User's anime status in MAL", required=False, choices={"All":"",  "Watching":"&status=watching",  "Completed":"&status=compleyed",  "On-hold":"&status=on_hold",  "Dropped":"&status=dropped", "PTW":"&status=plan_to_watch"}, default="")
 class User(commands.Cog):
