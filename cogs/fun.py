@@ -1,11 +1,53 @@
 import nextcord
 import random
-import asyncio
 from nextcord.ext import commands
 
 Owner = '639259314074157077'
 MASTER = '602098932260143124'
 MASTWO =  '847861640833007686'
+
+class Choose(nextcord.ui.View):
+    def __init__(self, ctx):
+        super().__init__(timeout=10)
+        self.value = 0
+        self.ctx = ctx
+
+    @nextcord.ui.button(emoji="🪨", style=nextcord.ButtonStyle.blurple)
+    async def hard(self, button:nextcord.ui.Button, ctx:nextcord.Interaction):
+        compChoice = random.choice(["🪨", "✂️","📄"])
+        if   compChoice == "✂️":
+            await self.ctx.edit_original_message(content="Oh nooooooooooo \nI lost, you totally crushed me :pensive:")
+            print("Computer lost")
+        elif compChoice == "📄":
+            await self.ctx.edit_original_message(content="Oh I won yay! \nI covered over you :stuck_out_tongue_winking_eye: ")
+            print("Computer won")
+        elif compChoice == '🪨':
+            await self.ctx.edit_original_message(content="Oh! We tied :neutral_face:")
+
+    @nextcord.ui.button(emoji="✂️", style=nextcord.ButtonStyle.red)
+    async def scissoring(self, button:nextcord.ui.Button, ctx:nextcord.Interaction):
+        compChoice = random.choice(["🪨", "✂️","📄"])
+        if   compChoice == "📄":
+            await self.ctx.edit_original_message(content="Oh nooooooooooo! \nI lost, you scissored me :face_with_raised_eyebrow:")
+            print("Computer lost")
+        elif compChoice == "🪨":
+            await self.ctx.edit_original_message(content="Oh I won yay! \nI crushed you :stuck_out_tongue_closed_eyes:")
+            print("Computer won")
+        elif compChoice == '✂️':
+            await self.ctx.edit_original_message(content="Oh! We tied :neutral_face:")
+
+    @nextcord.ui.button(emoji="📄", style=nextcord.ButtonStyle.grey)
+    async def tissue(self, button:nextcord.ui.Button, ctx:nextcord.Interaction):
+        compChoice = random.choice(["🪨", "✂️","📄"])
+        if  compChoice == "🪨":
+            await self.ctx.edit_original_message(content="Oh nooooooooooo! \n I lost, you covered me :rolling_eyes:")
+            print("Computer lost")
+        elif compChoice == "✂️":
+            await self.ctx.edit_original_message(content="Oh! I won yay! \n I cut right through your mind :sunglasses:")
+            print("Computer won")
+        elif compChoice == '📄':
+            await self.ctx.edit_original_message(content="Oh! We tied :neutral_face:")
+
 
 class Commands(commands.Cog):
     def __init__(self, client):
@@ -13,54 +55,13 @@ class Commands(commands.Cog):
 
 
 
-    @commands.command()
-    async def rps(self, ctx):
-        choices = ["🪨", "✂️","📄"]
-        mymass = await ctx.channel.send(f"Please choose an option from :rock:, ✂️ or 📄")
-        await mymass.add_reaction("🪨")
-        await mymass.add_reaction("✂️")
-        await mymass.add_reaction("📄")
+    @nextcord.slash_command(name="rps", description="Rock paper scissors")
+    async def rps(self, ctx:nextcord.Interaction):
+        view = Choose(ctx)
+        await ctx.send(f"Please choose an option from :rock:, ✂️ or 📄", view=view)
+        await view.wait()
+        await ctx.delete_original_message(delay=2)
 
-        def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) in choices
-        while True:
-            try:
-                reaction, user = await self.client.wait_for("reaction_add", timeout=10, check=check)
-                print(reaction)
-                print(user)
-                react = reaction
-                reaction = str(reaction.emoji)
-                compChoice = random.choice(choices)
-                if reaction == "🪨":
-                    print(f"{user} chose rock")
-                    if compChoice == "✂️":
-                        await mymass.edit(content="Oh nooooooooooo \n I lost, you totally crushed me :pensive:")
-                        print("Computer lost")
-                    elif compChoice == "📄":
-                        await mymass.edit(content="Oh I won yay! \n I covered over you :stuck_out_tongue_winking_eye: ")
-                        print("Computer won")
-                elif reaction == "✂️":
-                    if compChoice == "📄":
-                        await mymass.edit(content="Oh nooooooooooo! \n I lost, you scissored me :face_with_raised_eyebrow:")
-                        print("Computer lost")
-                    elif compChoice == "🪨":
-                        await mymass.edit(content="Oh I won yay! \n I crushed you :stuck_out_tongue_closed_eyes:")
-                        print("Computer won")
-                elif reaction == "📄":
-                    if compChoice == "🪨":
-                        await mymass.edit(content="Oh nooooooooooo! \n I lost, you covered me :rolling_eyes:")
-                        print("Computer lost")
-                    elif compChoice == "✂️":
-                        await mymass.edit(content="Oh! I won yay! \n I cut right through your mind :sunglasses:")
-                        print("Computer won")
-                if compChoice == reaction:
-                    print("both tied")
-                    await mymass.edit(content="Oh! We tied :neutral_face:")
-                await mymass.remove_reaction(react, user)
-                await ctx.channel.send(content="NEW GAME!", delete_after=2)
-            except asyncio.TimeoutError:
-                await ctx.channel.send("Timeout!")
-                break
 
     @commands.command(aliases=["hit","smack"])
     async def slap(self,ctx, *targ):
