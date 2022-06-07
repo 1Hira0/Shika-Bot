@@ -120,8 +120,8 @@ My Prefix is `%`
     @nextcord.slash_command(name="avatar", description="sends avatar")
     async def checkAV(self, ctx:Interaction, 
                       adult_video : nextcord.Member=SlashOption(
-                                                                name="member", description="member mention/ID", required=False, autocomplete=True
-                                                                )
+                            name="member", description="member mention/ID", 
+                            required=False, autocomplete=True)
                       ): #here adult_video is a pun for AV as an abbreviation for adult video
         if adult_video != None:
             await ctx.response.send_message(adult_video.avatar_url(size=4096))
