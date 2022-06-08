@@ -192,6 +192,8 @@ class Anime(commands.Cog):
             else: genre = '\ngenre: Not available yet'
             #recommendation/relatable shows
             recom = ''
+            lee = len(r['recommendations'])
+            if lee>20: lee =20
             if r['recommendations']:recom +=  "\nsimilar: "+(',\n'.join([f"[{r['recommendations'][i]['node']['title']}](https://myanimelist.net/anime/{r['recommendations'][i]['node']['id']})" for i in range(len(r['recommendations']))]))
             #studio which made this show
             studio = ''
@@ -213,14 +215,18 @@ class Anime(commands.Cog):
             rating=''
             if 'rating' in r: rating = "\nAge rating: "+r['rating']
             r_manga = ''
+            lee = len(r['related_manga'])
+            if lee>20: lee =20
             if r['related_manga']: 
                 r_manga = '\nRelated manga: ' + '\n'.join(
-                    [f"{_manga['relation_type_formatted']}: [{_manga['node']['title']}](https://myanimelist.net/manga/{_manga['node']['id']})" for _manga in r['related_manga']]
+                    [f"{r['related_manga'][i]['relation_type_formatted']}: [{r['related_manga'][i]['node']['title']}](https://myanimelist.net/manga/{r['related_manga'][i]['node']['id']})" for i in range(lee)]
                     )
             r_anime = ""
+            lee = len(r['related_anime'])
+            if lee>37: lee =37
             if r['related_anime']: 
                 r_anime = '\nRelated anime: ' + '\n'.join(
-                    [f"{_anime['relation_type_formatted']}: [{_anime['node']['title']}](https://myanimelist.net/anime/{_anime['node']['id']})" for _anime in r['related_anime']]
+                    [f"{r['related_anime'][i]['relation_type_formatted']}: [{r['related_anime'][i]['node']['title']}](https://myanimelist.net/anime/{r['related_anime'][i]['node']['id']})" for i in range(lee)]
                     ) 
             ops = ''
             if 'opening_themes' in r: 
