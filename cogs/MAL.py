@@ -423,7 +423,7 @@ class Manga(commands.Cog):
                     serialIn = f"\nSerialised in {r['serialization'][0]['node']['name']}"
                 except IndexError: None
             msg = [f"{synp} ",f"\n{avg} || {ranga} {creators} {chapters} {pub_dates} {serialIn} {genre} {recom} "]
-            emb= nextcord.Embed(title=r['title'], description=msg, color=nextcord.Color(0x2E51A2), 
+            emb= nextcord.Embed(title=r['title'], description=msg[0], color=nextcord.Color(0x2E51A2), 
                                 url= f"https://myanimelist.net/manga/{mangaID}")
             emb.set_author(icon_url=mangareader_icon, 
                            name="Read at", url=pirate[reading])
