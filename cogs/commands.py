@@ -16,18 +16,21 @@ class AllCommands(commands.Cog):
         if cummand == None:
             await ctx.channel.send(embed=nextcord.Embed(title="Shika's commands", description="""Hello my name is Shika, Japanese for Hira\n
 My Prefix is `%`
-    These are my functions: 
-        `%slap` - slaps a `target` 
-        `%ping` - sends my latency 
-        `%help` this msg where my master tried to be funny, please forgive me, i didnt do anything wrong! 
-        `%hug` lets you hug `target`
-        `%rps(Rock Paper Scissors)` - Play's Rock Paper Scissors with you ||maybe between player in the future too!||
-        `%avatar` - sends the user's avatar
-        `%toascii` - changes uploaded image to ascii (urls don't work for now and images are required)
-        /anime: `search` - search results for the name provided,
-        	    `info` - info for specified anime,
-                ``
-        		``"""))
+**    **These are my functions: 
+**        **`%slap` - slaps a `target` 
+**        **`%ping` - sends my latency 
+**        **`%help` - this mess 
+**        **`%hug` - lets you hug `target`
+**        **`/rps` - Play's Rock Paper Scissors with you ||maybe between players in the future too!||
+**        **`%avatar` - Sends the user's avatar
+**        **`%toascii( (/)` - changes uploaded image to ascii (urls don't work for now and images are required)
+**        **/anime (nsfw results only shown in nsfw channels): 
+**                **`search` - Search results for the name provided,
+**                **`info` - Info for chosen anime,
+**                **`ranking` - Anime ranking on the chosen type on MAL [How are anime ranked?](https://myanimelist.net/info.php?go=topanime)
+**                **`season` - Anime(s) of a chosen season of the specified year 
+**        **/weather: 
+**                **`current` - Current weather of a place matching the name provided"""))
 
             await ctx.channel.send(embed=nextcord.Embed(title="Possible commands in future",description="`Songs/Lyrics`(very unsure and may take more than 6 months), MAL(MyAnimeList) implementation(notifications for new shows and checking out shows)-in Dev-slash command, weather forecasting-in Dev-slash command"))
             await ctx.channel.send("Use the command name after `%help` for more info into the command")
@@ -35,12 +38,12 @@ My Prefix is `%`
         elif cummand != None:
         	#more info for slap command
             if "slap" in cummand:
-                await ctx.channel.send("The slap command lets you send an virtual slap to 	someone.\nIt requires a target to slap!")
+                await ctx.channel.send("The slap command lets you send an virtual slap to someone.\nIt requires a target to slap!")
                 await ctx.channel.send(file=nextcord.File("./help images/slap.png"))
 
         	#more info for ping command
             elif "ping" in cummand:
-                await ctx.channel.send("The ping command sends how long it takes for the bot 	to respond to a message")
+                await ctx.channel.send("The ping command sends how long it takes for the bot to respond to a message")
                 await ctx.channel.send(file=nextcord.File("./help images/ping.png"))
 
             #more info for the help command itself
@@ -104,7 +107,6 @@ My Prefix is `%`
             
             elif "anime" in cummand or "weather" in cummand: 
                 ctx.channel.send("")
-        await ctx.channel.send("Due to migration from nextcord.py to nextcord there can be some error")
 
         print("Help was ran")
     
