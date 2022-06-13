@@ -139,7 +139,7 @@ class Anime(commands.Cog):
     )
     async def search(self, ctx:Interaction, anime:str=animeSl_name, limit:int=animeSl_limit):
         print("search used")
-        response = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}", headers=auth)
+        response = requests.get(url=f"{mal_url}/anime?q={anime}&limit={limit}&nsfw={ctx.channel.nsfw}", headers=auth)
         print(response.status_code, f"\n{response.url}")
         if response.status_code == 200:
             r = response.json()['data']
@@ -157,7 +157,7 @@ class Anime(commands.Cog):
     @anime.subcommand(name="info", description=("anime info"))
     async def info(self, ctx:Interaction, name:str=animeSl_name):
         view = Choose(id=ctx.user.id)
-        anime  = requests.get(url=f"{mal_url}/anime?q={name}&limit={5}", headers=auth)
+        anime  = requests.get(url=f"{mal_url}/anime?q={name}&limit={5}&nsfw={ctx.channel.nsfw}", headers=auth)
         r = anime.json()['data']
         text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(r))])
         emb=nextcord.Embed(description=text, color=nextcord.Color(0x2E51A2))
@@ -262,7 +262,7 @@ class Anime(commands.Cog):
     async def rank(self, ctx: Interaction, tip:str=animeSl_ranks, limit:int=animeSl_limit):
         global cho
         _type = cho[tip]
-        ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}', headers=auth)
+        ranking = requests.get(f'{mal_url}/anime/ranking?ranking_type={_type}&limit={limit}&nsfw={ctx.channel.nsfw}', headers=auth)
         print(ranking.status_code)
         if ranking.status_code == 200:
             r = ranking.json()['data']
@@ -290,7 +290,7 @@ class Anime(commands.Cog):
     animeSl_season = SlashOption(name="season", description="season of anime release", required=True, choices=seasons)
     @anime.subcommand(name='season', description='Anime of seasons')
     async def seasonal(self, ctx:Interaction, year:int=animeSl_year, season:str=animeSl_season, limit:int=animeSl_limit):
-        response = requests.get(url=f"{mal_url}/anime/season/{year}/{season}?limit={limit}", headers=auth)
+        response = requests.get(url=f"{mal_url}/anime/season/{year}/{season}?limit={limit}&nsfw={ctx.channel.nsfw}", headers=auth)
         print(response.text)
         if response.status_code == 200:
             r_dict = response.json()
@@ -331,7 +331,7 @@ class Manga(commands.Cog):
         name="search", description="Search for manga")
     async def mangasearch(self, ctx:Interaction, manga:str=mangaSl_name, limit:int=animeSl_limit):
         print("search used")
-        r = requests.get(url=f"{mal_url}/manga?q={manga}&limit={limit}", headers=auth)
+        r = requests.get(url=f"{mal_url}/manga?q={manga}&limit={limit}&nsfw={ctx.channel.nsfw}", headers=auth)
         print(r.status_code, f"\n{r.url}")
         if r.status_code == 200:
             r_dict = r.json()['data']
@@ -350,7 +350,7 @@ class Manga(commands.Cog):
     @manga.subcommand(name="info", description=("Information on a manga"))
     async def mangainfo(self, ctx:Interaction, name:str=mangaSl_name):
         view = Choose(id=ctx.user.id)
-        manga  = requests.get(url=f"{mal_url}/manga?q={name}&limit={5}", headers=auth)
+        manga  = requests.get(url=f"{mal_url}/manga?q={name}&limit={5}&nsfw={ctx.channel.nsfw}", headers=auth)
         r = manga.json()['data']
         text = "\n".join([f"{i+1}. {r[i]['node']['title']}" for i in range(len(manga.json()['data']))])
         print(text)
@@ -453,7 +453,7 @@ class Manga(commands.Cog):
     async def ranks(self, ctx: Interaction, tip:str=mangaSL_ranks, limit:int=animeSl_limit):
         global cho2
         _type = cho2[tip]
-        ranking = requests.get(f'{mal_url}/manga/ranking?ranking_type={_type}&limit={limit}', headers=auth)
+        ranking = requests.get(f'{mal_url}/manga/ranking?ranking_type={_type}&limit={limit}&nsfw={ctx.channel.nsfw}', headers=auth)
         print(ranking.status_code)
         if ranking.status_code == 200:
             r = ranking.json()['data']
