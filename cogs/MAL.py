@@ -80,7 +80,7 @@ class Pages(ui.View):
         if self.page_no == 2:
             self.backward.disabled = False
             self.backward.style=ButtonStyle.green
-            self.no.label = f"{self.page_no}/{self.page_nos}"
+        self.no.label = f"{self.page_no}/{self.page_nos}"
         await ctx.response.edit_message(embed=self.embed, view=self)
     		
     async def interaction_check(self, interaction: Interaction):
