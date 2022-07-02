@@ -8,8 +8,7 @@ class Levels(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, ctx):        
         if self.client.user in ctx.mentions: await ctx.channel.send("https://tenor.com/view/anime-gif-18020020", delete_after=4.75)
-        elif False:#((ctx.guild.id == 722858994170986527) and (ctx.author.id == 159985870458322944 or ctx.author.id == 602098932260143124) and ("GG!" in ctx.content[:3])): # FOR THE BONGS237 SERVER -https://discord.gg/ardVCeZ
-            member = ctx.mentions[0]
+        elif False:#((ctx.guild.id == 722858994170986527) and (ctx.author.id == 159985870458322944 or ctx.author.id == 602098932260143124) and ("GG!" in ctx.content[:3])): # FOR THE BONGS237 SERVER            member = ctx.mentions[0]
             mee6 = [int(s) for s in str.split(ctx.content) if s.isdigit()]
             print(mee6)
             print("mee6[0]%10","\n", mee6[0]%10)
