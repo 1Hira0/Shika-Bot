@@ -9,5 +9,5 @@ export const onInteraction = async (interaction: Interaction) => {
         break;
             }
         }
-    }
+    } //else if ()
 };
