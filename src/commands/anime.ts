@@ -9,7 +9,7 @@ const anilist_icon = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/
 export const jsanime: Command = {
     data: new SlashCommandBuilder()
         .setName("jsanime")
-        .setDescription("sends anime with js")
+        .setDescription("Anime info")
         .addStringOption(option =>
             option.setName('anime')
                     .setDescription("Name of the anime")
@@ -38,8 +38,8 @@ export const jsanime: Command = {
 								idMal
 								siteUrl
       							title {
-        						english
-								romaji
+        							english
+									romaji
       							}
 								description
 								bannerImage
@@ -74,16 +74,16 @@ export const jsanime: Command = {
         } else {
 			await interaction.editReply({content:`No entry found with title "${interaction.options.get("anime")?.value}". Please try again after checking the spelling and typos.`})
 		}
-        }
+    }
 };
 
 export const jschar: Command = {
 	data: new SlashCommandBuilder()
 		.setName("jscharacter")
-		.setDescription("Sends character info with js")
+		.setDescription("Character info")
 		.addStringOption(option=>
 			option.setName('name')
-				  .setDescription('Name of the characters')
+				  .setDescription('Name of the character')
 				  .setRequired(true)),
 	run: async (interaction) => {
 		await interaction.deferReply()
@@ -96,26 +96,24 @@ export const jschar: Command = {
           	body: JSON.stringify({
           	    query: `query ($id: Int, $page: Int, $perPage: Int, $search: String) {
 					Page (page: $page, perPage: $perPage) {
-					  pageInfo {
+					  	pageInfo {
 							total
 							currentPage
 							lastPage
 							hasNextPage
 							perPage
-					  }
-					  characters (id: $id, search: $search) {
+					  	}
+					  	characters (id: $id, search: $search) {
 							id
 							siteUrl
 							image {
 								large
 							}
 							name {
-						  userPreferred
+						  		userPreferred
 							}
-						  description(asHtml:false)
-						  
-						  
-					  }
+						  	description(asHtml:false)
+					  	}
 					}
 				}`,
           	    variables: { "search":interaction.options.get("name")?.value, "page":1, "perPage":1}
@@ -136,7 +134,7 @@ export const jschar: Command = {
 			}
 			const emb = new EmbedBuilder()
 				.setTitle(character.name.userPreferred)
-				.setDescription(dex.replace(/<(i|\/i|br)>/gm, "").replace(/(~!|!~)/gm, "||"))
+				.setDescription(dex.replace(/<(i|\/i|br)>/gm, "").replace(/(~![\d\w]+?!~)/gm, "||"))
 				.setURL(character.siteUrl)
 				.setAuthor({name:`Anilist`,iconURL:anilist_icon, url:`https://anilist.co`})// (no ids for characters) 
 				.setColor(await getDominantColour(character.image.large))
