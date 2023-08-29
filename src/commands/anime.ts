@@ -150,9 +150,71 @@ export const jschar: Command = {
 export const jsmanga: Command = {
 	data: new SlashCommandBuilder()
 		.setName("jsmanga")
-		.setDescription("Sends manga info with js"),
-	run: async (interaction) => {
-		await interaction.reply({content:"Command in development"})
+		.setDescription("Manga info")
+		.addStringOption(option => 
+			option.setName("title")
+				.setDescription("Title of the manga")
+				.setRequired(true)),
+	run: async (interaction) =>{
+		await interaction.deferReply()
+		const response = await fetch('https://graphql.anilist.co',{
+						method: 'POST',
+						headers: {
+						  'Content-Type': 'application/json',
+						  'Accept': 'application/json',
+						},
+						body: JSON.stringify({
+						  query: `
+							query ($id: Int, $page: Int, $perPage: Int, $search: String) {
+								Page (page: $page, perPage: $perPage) {
+									pageInfo {
+										total
+										currentPage
+										lastPage
+										hasNextPage
+										perPage
+									}
+									media (id: $id, search: $search, type:MANGA) {
+										id
+										idMal
+										siteUrl
+										title {
+											english
+											romaji
+										}
+										description
+										bannerImage
+										coverImage {
+											color
+											extraLarge
+										}
+									}
+								}
+							}
+						`,
+						  variables: { "search":interaction.options.get("title")?.value, "page":1, "perPage":1}
+						})
+		  });
+		const r = await response.json();
+		if (r.data.Page.media.length && Array.isArray(r.data.Page.media)) {
+						const manga = r.data.Page.media[0]
+						let dex = `${manga.description}`.replace(/<((\/|\\){0,1}?(i|br)(\/|\\){0,1}?)>/gm, "").replace(/(~!|!~)/gm, "||")
+						if (dex.length > 4096) {
+							dex = dex.slice(4090) + "`...`"
+						}
+						const emb = new EmbedBuilder()
+								.setDescription(dex)
+								.setTitle(manga.title.romaji)
+								.setURL(manga.siteUrl)
+								.setAuthor({name:"Don't like AL? Try MAL by clicking here", url:`https://mynanimelist.net/manga/${manga.idMal}`, iconURL:mal_icon})
+								.setColor(manga.coverImage.color)
+								.setImage(`https://img.anili.st/media/${manga.id}`)
+								.setThumbnail(manga.coverImage.extraLarge)
+								.setFooter({text:"Get more information at Anilist by clicking the blue text at top"})
+						await interaction.editReply({embeds:[emb]})
+		} else {
+			await interaction.editReply({content:`No entry found with title "${interaction.options.get("title")?.value}". Please try again after checking the spelling and typos.`})
+		}
 	}
 };
 
