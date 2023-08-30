@@ -8,7 +8,7 @@ const anilist_icon = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/
 
 export const jsanime: Command = {
     data: new SlashCommandBuilder()
-        .setName("jsanime")
+        .setName("anime")
         .setDescription("Anime info")
         .addStringOption(option =>
             option.setName('anime')
@@ -79,7 +79,7 @@ export const jsanime: Command = {
 
 export const jschar: Command = {
 	data: new SlashCommandBuilder()
-		.setName("jscharacter")
+		.setName("character")
 		.setDescription("Character info")
 		.addStringOption(option=>
 			option.setName('name')
@@ -149,7 +149,7 @@ export const jschar: Command = {
 
 export const jsmanga: Command = {
 	data: new SlashCommandBuilder()
-		.setName("jsmanga")
+		.setName("manga")
 		.setDescription("Manga info")
 		.addStringOption(option => 
 			option.setName("title")
@@ -220,7 +220,7 @@ export const jsmanga: Command = {
 
 export const jsstudio: Command = {
 	data: new SlashCommandBuilder()
-		.setName("jsstudio")
+		.setName("studio")
 		.setDescription("studio info")
 		.addStringOption(option=>
 			option.setName("name")
@@ -264,23 +264,17 @@ export const jsstudio: Command = {
 				}`, variables: interaction.options.get('id')? {"id": interaction.options.get('id')?.value}: {"search":interaction.options.get('name')?.value}
 			})
 		});
-		console.log(interaction.options.get(interaction.options.get('id')? "id":"name")?.value);
 		const r = await response.json();
-		console.log(r);
 		if (!r.data.Page.studios) {
 			await interaction.editReply({
 				content:`No studio found with "${interaction.options.get(interaction.options.get('id')? "id":"name")?.value}".
 				Please try again after checking the parameters provided.`});
 			return}
 		const stud = r.data.Page.studios[0];
-		console.log(stud)
 		let dex = ''
-		console.log(stud.media.nodes[0].title)
 		for (let i=0;i<stud.media.nodes.length-1;i++) {
-			console.log(i)
 			dex = `${dex}[${stud.media.nodes[i].title.userPreferred}](${stud.media.nodes[i].siteUrl})\n`
 		}
-		console.log(dex)
 		const emb = new EmbedBuilder()
 			     .setTitle(stud.name)
 				 .setDescription(dex)
