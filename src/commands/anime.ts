@@ -221,8 +221,70 @@ export const jsmanga: Command = {
 export const jsstudio: Command = {
 	data: new SlashCommandBuilder()
 		.setName("jsstudio")
-		.setDescription("Sends studio info with js"),
+		.setDescription("studio info")
+		.addStringOption(option=>
+			option.setName("name")
+				  .setDescription("Name of the studio")
+				  .setRequired(true))
+		.addNumberOption(option=>
+			option.setName("id")
+				  .setRequired(false)
+				  .setDescription("ID of the studio. Required name won't be considered so enter gibbrish")),
 	run: async (interaction) => {
-		await interaction.reply({content:"Command in development"})
-	}
+		await interaction.deferReply()
+		const response = await fetch("https://graphql.anilist.co", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"Accept": "application/json"
+			},
+			body: JSON.stringify({
+				query: `query ($id: Int $search: String) {
+							Page (page: 1, perPage: 1) {
+								pageInfo {
+									  total
+									  currentPage
+									  lastPage
+									  hasNextPage
+									  perPage
+								}
+								studios (id:$id, search:$search, sort: [
+									SEARCH_MATCH, SEARCH_MATCH, NAME, FAVOURITES
+								]) {
+									id
+									name
+									siteUrl
+									media (sort:[POPULARITY,SCORE], perPage:10, page:1){
+										nodes {siteUrl 
+											   title {userPreferred}
+										}
+									}
+								}
+							} 
+				}`, variables: interaction.options.get('id')? {"id": interaction.options.get('id')?.value}: {"search":interaction.options.get('name')?.value}
+			})
+		});
+		console.log(interaction.options.get(interaction.options.get('id')? "id":"name")?.value);
+		const r = await response.json();
+		console.log(r);
+		if (!r.data.Page.studios) {
+			await interaction.editReply({
+				content:`No studio found with "${interaction.options.get(interaction.options.get('id')? "id":"name")?.value}".
+				Please try again after checking the parameters provided.`});
+			return}
+		const stud = r.data.Page.studios[0];
+		console.log(stud)
+		let dex = ''
+		console.log(stud.media.nodes[0].title)
+		for (let i=0;i<stud.media.nodes.length-1;i++) {
+			console.log(i)
+			dex = `${dex}[${stud.media.nodes[i].title.userPreferred}](${stud.media.nodes[i].siteUrl})\n`
+		}
+		console.log(dex)
+		const emb = new EmbedBuilder()
+			     .setTitle(stud.name)
+				 .setDescription(dex)
+				 .setURL(stud.siteUrl)
+		await interaction.editReply({embeds:[emb]})
+	}	 
 };
