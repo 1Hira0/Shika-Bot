@@ -6,7 +6,7 @@ console.log("Running");
 (async () => {
     const bot = new Client({intents: [GatewayIntentBits.Guilds]});
     bot.on("ready", async () => {await onReady(bot); 
-                                bot.user?.setPresence({ activities: [{ type:ActivityType.Playing, name: 'with Discord.js(in ts) + Nextcord' }], status: 'idle' })
+                                bot.user?.setPresence({ activities: [{ type:ActivityType.Playing, name: 'Enjoy v3' }], status: 'idle' })
                         });
     bot.on("interactionCreate", async (interaction) => await onInteraction(interaction));
     await bot.login(process.env.BOT_TOKEN);
