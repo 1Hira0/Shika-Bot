@@ -3,7 +3,8 @@ import { Command } from "../interfaces/Command";
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import fs from 'fs';
 
-const characters = JSON.parse(fs.readFileSync('E:\\Hira\\data\\characters.json', 'utf-8'));
+const charDetails = JSON.parse(fs.readFileSync('E:\\Hira\\data\\characters.json', 'utf-8'));
+const charHash = JSON.parse(fs.readFileSync('E:\\Hira\\data\\TextMapEN.json', 'utf-8'))
 
 export const showcase: Command = {
     data:new SlashCommandBuilder()
@@ -28,7 +29,7 @@ export const showcase: Command = {
         const char = playerInfo.showAvatarInfoList
         let dex = ''
         for(let i=0;i<8;i++) {
-            dex = `${dex}${characters[char[i].avatarId].NameTextMapHash}: ${char[i].level}\n`
+            dex = `${dex}${charHash[charDetails[char[i].avatarId].NameTextMapHash]}: ${char[i].level}\n`
         }
 
         const embed = new EmbedBuilder()
