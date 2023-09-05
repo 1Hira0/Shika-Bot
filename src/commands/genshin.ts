@@ -3,8 +3,8 @@ import { Command } from "../interfaces/Command";
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import fs from 'fs';
 
-const charDetails = JSON.parse(fs.readFileSync('E:\\Hira\\data\\characters.json', 'utf-8'));
-const charHash = JSON.parse(fs.readFileSync('E:\\Hira\\data\\TextMapEN.json', 'utf-8'))
+const charDetails = JSON.parse(fs.readFileSync('E:\\Hira\\data\\characters.json', 'utf-8')); //src: https://github.com/EnkaNetwork/API-docs/blob/master/store/characters.json
+const charHash = JSON.parse(fs.readFileSync('E:\\Hira\\data\\TextMapEN.json', 'utf-8'));     //src: https://gitlab.com/Dimbreath/AnimeGameData/-/blob/master/TextMap/TextMapEN.json
 
 export const showcase: Command = {
     data:new SlashCommandBuilder()
