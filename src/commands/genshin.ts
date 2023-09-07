@@ -18,22 +18,29 @@ export const showcase: Command = {
                        .setMinValue(100000000)),
     run:async (interaction) => {
         const msg = await interaction.deferReply();
-        const response = await fetch(`https://enka.network/api/uid/${interaction.options.get('uid')?.value}?info`)
+        const response = await fetch(`https://enka.network/api/uid/${interaction.options.get('uid')?.value}`,{
+            headers: {'User-Agent':"1Hira0"}
+        })
         console.log(response)
         if (response.status != 200) {
             await interaction.editReply(`Some error occurred: ${response.status}`) //to add error handling
             return;
-        }
-        const data = await response.json()
+        };
+        const data = await response.json();
         const playerInfo = data.playerInfo;
-        const char = playerInfo.showAvatarInfoList
-        let dex = ''
-        let options = []
+        const char = playerInfo.showAvatarInfoList;
+        let dex = '';
+        let selected;
+        let options = [new StringSelectMenuOptionBuilder()
+                        .setLabel('Home')
+                        .setValue(playerInfo.nickname)
+                    ];
         for(let i=0;i<8;i++) {
             dex = `${dex}${charHash[charDetails[char[i].avatarId].NameTextMapHash]}: ${char[i].level}\n`
             options.push(new StringSelectMenuOptionBuilder()
                             .setLabel(charHash[charDetails[char[i].avatarId].NameTextMapHash])
-                            .setValue(`${char[i].avatarId}`))
+                            .setValue(`${char[i].avatarId}`)
+                            )
         };
 
         const embed = new EmbedBuilder()
@@ -43,12 +50,20 @@ export const showcase: Command = {
         const select = new StringSelectMenuBuilder()
             .setCustomId('mommy')
             .setPlaceholder('Show character')
+            .setMaxValues(1)
             .addOptions(options);
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(select);
         await interaction.editReply({embeds:[embed], components:[row]});
         
-        const collector = msg.createMessageComponentCollector({componentType:ComponentType.StringSelect, time:(15*60)*1000})
- 
+        const collector = msg.createMessageComponentCollector({
+            componentType:ComponentType.StringSelect,
+            time:(15*60)*1000,
+            filter:i => i.user.id === interaction.user.id
+        });
+        collector.on('collect', async i => {
+            embed.setTitle(charHash[charDetails[i.values[0]].NameTextMapHash]);
+            i.update({embeds:[embed]});
+        })
     }
 }
