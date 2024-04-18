@@ -62,6 +62,14 @@ export const showcase: Command = {
             filter:i => i.user.id === interaction.user.id
         });
         collector.on('collect', async i => {
+            console.log(options[3]==(new StringSelectMenuOptionBuilder()
+            .setLabel(charHash[charDetails[i.values[0]].NameTextMapHash])
+            .setValue(i.values[0])
+            ));
+            let idx = options.indexOf(new StringSelectMenuOptionBuilder()
+                .setLabel(charHash[charDetails[i.values[0]].NameTextMapHash])
+                .setValue(i.values[0])
+            );
             embed.setTitle(charHash[charDetails[i.values[0]].NameTextMapHash]);
             i.update({embeds:[embed]});
         })
