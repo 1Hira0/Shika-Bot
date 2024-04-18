@@ -68,7 +68,7 @@ export const anime: Command = {
 					.setAuthor({name:"Don't like AL? Try MAL by clicking here", url:`https://mynaimelist.net/anime/${anime.idMal}`, iconURL:mal_icon})
 					.setColor(anime.coverImage.color)
 					.setImage(`https://img.anili.st/media/${anime.id}`)
-					.setThumbnail(anime.coverImage.extraLarge)
+					.setThumbnail(anilist_icon)
 					.setFooter({text:"Get more information at Anilist by clicking the blue text at top"})
         	await interaction.editReply({embeds:[emb]})
         } else {
@@ -209,7 +209,7 @@ export const manga: Command = {
 								.setAuthor({name:"Don't like AL? Try MAL by clicking here", url:`https://mynanimelist.net/manga/${manga.idMal}`, iconURL:mal_icon})
 								.setColor(manga.coverImage.color)
 								.setImage(`https://img.anili.st/media/${manga.id}`)
-								.setThumbnail(manga.coverImage.extraLarge)
+								.setThumbnail(anilist_icon)
 								.setFooter({text:"Get more information at Anilist by clicking the blue text at top"})
 						await interaction.editReply({embeds:[emb]})
 		} else {
