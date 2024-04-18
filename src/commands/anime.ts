@@ -282,3 +282,43 @@ export const studio: Command = {
 		await interaction.editReply({embeds:[emb]})
 	}	 
 };
+
+export const search: Command = {
+	data: new SlashCommandBuilder()
+		.addSubcommand(sub => sub
+			.setName('media')
+			.setDescription('Search anime/manga3 by name/filters')
+			.addStringOption(op => op
+				.setName('name')
+				.setDescription('name of media')
+			)
+			.addStringOption(op => op
+				.setName("type")
+				.setDescription("Type of media")
+				.addChoices(
+					{name:'anime', value:'ANIME'}, 
+					{name:'manga',value:'MANGA'})
+			)
+			.addStringOption(op => op
+				.setName("genres")
+				.setDescription("List of genres, use (,) for separation")
+			)
+			
+		),
+	run: async (interaction) => {
+		await interaction.deferReply()
+		const res = await fetch('hhtps://graphql.anilist.co', {
+			method:'POST',
+			headers: {
+				"Content-Type": "application/json",
+				"Accept": "application/json"
+			},
+			body:JSON.stringify({query:`
+				query ($type:String)`,
+				variables:{"type":interaction.options.get('type')}
+			})
+		})
+		
+	}
+
+}
