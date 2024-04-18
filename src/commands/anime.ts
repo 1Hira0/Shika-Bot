@@ -6,7 +6,7 @@ import { getDominantColour } from '../extras';
 const mal_icon = "https://image.myanimelist.net/ui/OK6W_koKDTOqqqLDbIoPAiC8a86sHufn_jOI-JGtoCQ"
 const anilist_icon = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/AniList_logo.svg/2048px-AniList_logo.svg.png"
 
-export const jsanime: Command = {
+export const anime: Command = {
     data: new SlashCommandBuilder()
         .setName("anime")
         .setDescription("Anime info")
@@ -77,7 +77,7 @@ export const jsanime: Command = {
     }
 };
 
-export const jschar: Command = {
+export const char: Command = {
 	data: new SlashCommandBuilder()
 		.setName("character")
 		.setDescription("Character info")
@@ -147,7 +147,7 @@ export const jschar: Command = {
 	}
 };
 
-export const jsmanga: Command = {
+export const manga: Command = {
 	data: new SlashCommandBuilder()
 		.setName("manga")
 		.setDescription("Manga info")
@@ -218,7 +218,7 @@ export const jsmanga: Command = {
 	}
 };
 
-export const jsstudio: Command = {
+export const studio: Command = {
 	data: new SlashCommandBuilder()
 		.setName("studio")
 		.setDescription("studio info")
