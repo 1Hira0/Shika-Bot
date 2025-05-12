@@ -231,6 +231,7 @@ export const studio: Command = {
 				  .setRequired(false)
 				  .setDescription("ID of the studio. Required name won't be considered so enter gibbrish")),
 	run: async (interaction) => {
+		await interaction.reply('In production')/*
 		await interaction.deferReply()
 		const response = await fetch("https://graphql.anilist.co", {
 			method: "POST",
@@ -280,5 +281,5 @@ export const studio: Command = {
 				 .setDescription(dex)
 				 .setURL(stud.siteUrl)
 		await interaction.editReply({embeds:[emb]})
-	}	 
+	*/}	 
 };
