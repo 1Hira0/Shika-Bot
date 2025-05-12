@@ -13,3 +13,13 @@ export const ping: Command = {
             await interaction.editReply({content:`Websocket: ${Math.round(interaction.client.ws.ping)}ms || RoundABout:${endtime-starttime}ms`})
     }
 };
+/*
+export const times:Command = {
+    data: new SlashCommandBuilder()
+        .setName("times")
+        .setDescription("work with discord timestamps")
+        .addStringOption(option=>{
+            option.setName("text")
+        }),
+    run: async (i) => {}
+}*/

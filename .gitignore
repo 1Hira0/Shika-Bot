@@ -2,3 +2,7 @@
 /prod/
 .env
 package-lock.json
+genshin-related.json
+.gitignore
+characters.json
+TextMapEN.json

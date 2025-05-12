@@ -3,8 +3,11 @@ import { Command } from "../interfaces/Command";
 import { ActionRowBuilder, ComponentType, EmbedBuilder, SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
 import fs from 'fs';
 
-const charDetails = JSON.parse(fs.readFileSync('E:\\Hira\\data\\characters.json', 'utf-8')); //src: https://github.com/EnkaNetwork/API-docs/blob/master/store/characters.json
-const charHash = JSON.parse(fs.readFileSync('E:\\Hira\\data\\TextMapEN.json', 'utf-8'));     //src: https://gitlab.com/Dimbreath/AnimeGameData/-/blob/master/TextMap/TextMapEN.json
+let charDetails:any;// = JSON.parse(fs.readFileSync('.\\characters.json', 'utf-8')); //src: https://github.com/EnkaNetwork/API-docs/blob/master/store/characters.json
+let charHash:any;// = JSON.parse(fs.readFileSync('.\\TextMapEN.json', 'utf-8'));     //src: https://gitlab.com/Dimbreath/AnimeGameData/-/blob/master/TextMap/TextMapEN.json
+fetch('https://raw.githubusercontent.com/EnkaNetwork/API-docs/refs/heads/master/store/characters.json').then(async (resp) => { charDetails = await resp.json()} )
+fetch('https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/TextMap/TextMapEN.json').then(async (resp) => { charHash = await resp.json()} )
+
 
 export const showcase: Command = {
     data:new SlashCommandBuilder()
@@ -35,7 +38,7 @@ export const showcase: Command = {
                         .setLabel('Home')
                         .setValue(playerInfo.nickname)
                     ];
-        for(let i=0;i<8;i++) {
+        for(let i=0;i<12;i++) {
             dex = `${dex}${charHash[charDetails[char[i].avatarId].NameTextMapHash]}: ${char[i].level}\n`
             options.push(new StringSelectMenuOptionBuilder()
                             .setLabel(charHash[charDetails[char[i].avatarId].NameTextMapHash])
@@ -62,6 +65,14 @@ export const showcase: Command = {
             filter:i => i.user.id === interaction.user.id
         });
         collector.on('collect', async i => {
+            console.log(options[3]==(new StringSelectMenuOptionBuilder()
+            .setLabel(charHash[charDetails[i.values[0]].NameTextMapHash])
+            .setValue(i.values[0])
+            ));
+            let idx = options.indexOf(new StringSelectMenuOptionBuilder()
+                .setLabel(charHash[charDetails[i.values[0]].NameTextMapHash])
+                .setValue(i.values[0])
+            );
             embed.setTitle(charHash[charDetails[i.values[0]].NameTextMapHash]);
             i.update({embeds:[embed]});
         })
