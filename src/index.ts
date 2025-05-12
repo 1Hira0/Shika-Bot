@@ -27,3 +27,10 @@ console.log("Running");
     bot.on("guildMemberAdd", async (i) => await onMemberJoin(i))
     await bot.login(process.env.BOT_TOKEN);
 })();
+
+import http from 'http';
+
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Bot is alive!');
+}).listen(process.env.PORT || 8000);
