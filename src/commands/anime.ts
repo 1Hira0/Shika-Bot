@@ -282,18 +282,3 @@ export const studio: Command = {
 		await interaction.editReply({embeds:[emb]})
 	}	 
 };
-
-export const search: Command = {
-	data: new SlashCommandBuilder()
-		.addSubcommand(sub => sub
-			.setName('media')
-			.setDescription('Search anime/manga3 by name/filters')
-			.addStringOption(op => op
-				.setName('name')
-				.setDescription('name of media')
-			)
-		),
-	run: async (interaction) => { 
-		interaction.reply("In development")
-	}
-}
