@@ -9,7 +9,8 @@ console.log("Running");
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildMembers
         ]
     });
     bot.on("ready", async () => {
@@ -24,7 +25,7 @@ console.log("Running");
     });
         
     bot.on("interactionCreate", async (interaction) => await onInteraction(interaction));
-    bot.on("guildMemberAdd", async (i) => await onMemberJoin(i))
+    bot.on("guildMemberAdd", async (i) => await onMemberJoin(i));
     await bot.login(process.env.BOT_TOKEN);
 })();
 
