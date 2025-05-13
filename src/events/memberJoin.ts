@@ -2,26 +2,29 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, StringSele
     GuildMember,  TextChannel } from "discord.js";
 
 let grades = {"12":"1371047485635694633", "11":"1371388371280199740"}
-let secL = {}
+let secL = {"12A":"1371387449326047275", "12B":"1371387563356721183", "12C":"1370063304650788894", "12D":"1370063558796120154", "12E":"1371852477821096068","12F":"1371388270289616906",
+            "11A":"1371388413323771916", "11B":"1371388451806642239", "11C":"1371388492869013565", "11D":"1371388525328470077", "11E":"1371388554063904788","11F":"1371388593225994241"
+}
 export const onMemberJoin = async (guy: GuildMember) => {
     console.log("Member joined")
     if (guy.guild.id == "1370062593603010621") {
         guy.roles.add("1370073421504839690");
-        const c = await guy.guild.channels.fetch("1370072981656571995") as TextChannel
-        const m = await c.send({
+        const ch = await guy.guild.channels.fetch("1370072981656571995") as TextChannel
+        const m = await ch.send({
             content:`Hello there <@${guy.id}>! Please wait for <@602098932260143124> to verify you.\nMeanwhile read <#1370074384005333042> choose your class and section roles then talk`,
             components:[classes]
         })
         let collector = m.createMessageComponentCollector({componentType:ComponentType.StringSelect, time:10*60*1000, filter:i => i.user.id == guy.id});
+        let c:string;
         collector.on("collect", async i => {
             if (i.customId == "class") {
-                const c = i.values[0]
-                await i.update({content:`You have selected class ${c}`, components:[ new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(StringSelectMenuBuilder.from((i.component)).setDisabled(true))/*, sections*/]})
+                c = i.values[0]
+                await i.update({content:`You have selected class ${c}`, components:[ new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(StringSelectMenuBuilder.from((i.component)).setDisabled(true)), sections]})
                 guy.roles.add(grades[c as keyof typeof grades])
             }
-            else if (i.customId == "section" && false) {
-                const c = i.values[0]
-                guy.roles.add(secL[c as keyof typeof secL])
+            else if (i.customId == "section") {
+                const s = i.values[0]
+                guy.roles.add(secL[c+s as keyof typeof secL])
             }
 
         })
