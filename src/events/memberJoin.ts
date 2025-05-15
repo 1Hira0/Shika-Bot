@@ -6,17 +6,18 @@ let secL = {"12A":"1371387449326047275", "12B":"1371387563356721183", "12C":"137
             "11A":"1371388413323771916", "11B":"1371388451806642239", "11C":"1371388492869013565", "11D":"1371388525328470077", "11E":"1371388554063904788","11F":"1371388593225994241"
 }
 export const onMemberJoin = async (guy: GuildMember) => {
-    console.log("Member joined")
+    console.log("Member joined", guy)
     if (guy.guild.id == "1370062593603010621") {
         guy.roles.add("1370073421504839690");
         const ch = await guy.guild.channels.fetch("1370072981656571995") as TextChannel
         const m = await ch.send({
-            content:`Hello there <@${guy.id}>! Please wait for <@602098932260143124> to verify you.\nMeanwhile read <#1370074384005333042> choose your class and section roles then talk`,
+            content:`Hello there <@${guy.id}>! Please read <#1370074384005333042> and choose your class and section roles then talk`,
             components:[classes]
         })
         let collector = m.createMessageComponentCollector({componentType:ComponentType.StringSelect, time:10*60*1000, filter:i => i.user.id == guy.id});
         let c:string;
         collector.on("collect", async i => {
+            console.log(i)
             if (i.customId == "class") {
                 c = i.values[0]
                 await i.update({content:`You have selected class ${c}`, components:[ new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(StringSelectMenuBuilder.from((i.component)).setDisabled(true)), sections]})
@@ -25,6 +26,9 @@ export const onMemberJoin = async (guy: GuildMember) => {
             else if (i.customId == "section") {
                 const s = i.values[0]
                 guy.roles.add(secL[c+s as keyof typeof secL])
+                await i.update({content:`You have selected class ${c}-${s}`, components:[ new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(StringSelectMenuBuilder.from((i.component)).setDisabled(true))]})
+                guy.roles.remove("1370073421504839690")
+                guy.roles.add("1370072797115846697")
             }
 
         })
